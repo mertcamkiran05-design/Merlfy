@@ -1,7 +1,40 @@
 # Merlfy — Durum & Devam Notları
 
-_Son güncelleme: 2026-09-18 (5. oturum sonu) · **ARTIK İKİ AYRI MERLFY VAR** — aşağıya bak_
+_Son güncelleme: 2026-10-10 (6. oturum) · **ARTIK İKİ AYRI MERLFY VAR** — aşağıya bak_
 
+> ## 🔴 2026-10-10, 6. oturum — Proje GitHub'a taşındı + Firebase Storage'da GERÇEK BUG bulundu (henüz düzeltilmedi, kullanıcıdan aksiyon bekleniyor)
+> **1) GitHub'a taşıma:** Kullanıcı başka bir PC'ye geçeceği için `C:\Users\Acer\merlfy` git repo'suna çevrildi
+> ve https://github.com/mertcamkiran05-design/Merlfy (branch `main`) adresine push edildi. `.gitignore` ile
+> `web/.netlify/state.json` hariç tutuldu (makineye özel Netlify site-link dosyası — diğer PC'de Netlify Drop
+> ile yeniden deploy edilecek ya da `netlify link` ile bağlanılacak). Diğer PC'de devam etmek için:
+> `git clone https://github.com/mertcamkiran05-design/Merlfy.git`.
+>
+> **2) Firebase Storage görsel yükleme testi — BUG BULUNDU, Storage hiç etkin değil:**
+> Playwright ile `merlfy.netlify.app` üzerinde yeni bir test hesabı açılıp composer'a görsel eklenip
+> kaydedildi. Tarayıcı konsolunda görsel yükleme sürekli CORS hatası verdi:
+> `Access to XMLHttpRequest at 'https://firebasestorage.googleapis.com/v0/b/merlfycom.firebasestorage.app/o?...'
+> blocked by CORS policy: preflight request doesn't pass access control check`.
+> Node'dan (CORS'un etkilemediği) aynı bucket'a ham `GET` isteği atılınca gerçek sebep ortaya çıktı:
+> **`https://firebasestorage.googleapis.com/v0/b/merlfycom.firebasestorage.app/o?maxResults=1` → `404 Not Found`**.
+> Yani `firebaseConfig.storageBucket` (`web/index.html` ~L711, `merlfycom.firebasestorage.app`) kodda doğru
+> yazılmış ama bu bucket Google tarafında **hiç provision edilmemiş** — Firebase konsolunda Storage sekmesi
+> muhtemelen hiç "Get started" ile açılmamış. CORS hatası bu 404'ün tarayıcıdaki yan etkisi, asıl sorun değil.
+> **Memo metni + metin-only kayıt çalışıyor** (sadece görsel eki başarısız oluyor), satranç/online mod bu
+> oturumda tekrar dokunulmadı, regresyon yok.
+>
+> **⏳ Kullanıcıdan beklenen aksiyon (Claude'un Firebase konsoluna erişimi yok):**
+> 1. console.firebase.google.com → proje **merlfycom** → **Storage** → "Get started" ile bucket'ı oluştur.
+> 2. Oluşan gerçek bucket adını (üstte `gs://...` olarak görünür) bildir — kod'daki
+>    `merlfycom.firebasestorage.app` ile eşleşmiyorsa `firebaseConfig.storageBucket` güncellenecek.
+> 3. `web/storage.rules` dosyasının içeriğini Storage → Rules'a yapıştır, yayınla.
+> 4. Sonra Claude Playwright ile tekrar test edip gerçekten yüklendiğini doğrulayacak.
+>
+> Test script'leri session-geçici scratchpad'de kaldı (`…/scratchpad/pw/storage_test.js` + `test.png`),
+> kalıcı değil — gerekirse yeniden yazılmalı. Playwright npm paketi + Chromium/headless-shell bu oturumda
+> scratchpad'e kuruldu (proje reposuna girmedi).
+>
+> ---
+>
 > ## ✅ 2026-09-18, 5. oturum — Gerçek zamanlı ONLİNE satranç eklendi, deploy edildi, canlıda bug bulunup düzeltildi — HEPSİ TAMAM
 > Bu oturumda yapılanların tamamı canlıda (merlfy.netlify.app) çalışır durumda. Sıradaki oturum
 > DURUM.md'yi baştan okuyabilir ama şu an bekleyen bir iş YOK — sadece opsiyonel temizlik notları var
