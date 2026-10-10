@@ -1,0 +1,3123 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Merlfy</title>
+<meta name="description" content="Kişisel, çok profilli memo defteri.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Merlfy">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ecedee">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131719">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  /* ============ TOKENS ============ */
+  :root{
+    color-scheme:light;
+    --bg:#ecedee; --surface:#f7f8f8; --surface-2:#eef0f0; --raise:#ffffff;
+    --text:#1b262c; --text-dim:#586870; --text-faint:#8a979d;
+    --border:#d5dadc; --border-strong:#c1c8cb;
+    --accent:#b06a26; --accent-ink:#ffffff; --accent-weak:#efe4d4; --accent-line:#d9b98d;
+    --link:#2c6b66;
+    --good:#3d7a4c; --warn:#a9791f; --danger:#ad3a33;
+    --hm0:#e3e5e6; --hm1:#e6cfa9; --hm2:#d5a35f; --hm3:#b87a2f; --hm4:#8c5716;
+    --shadow:0 1px 2px rgba(20,30,35,.06), 0 6px 20px -8px rgba(20,30,35,.14);
+    --shadow-pop:0 12px 40px -12px rgba(20,30,35,.32);
+    --r:12px; --r-sm:8px;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --display:"Bricolage Grotesque",var(--sans);
+  }
+  :root:not([data-theme="light"]){ @media (prefers-color-scheme:dark){
+    color-scheme:dark;
+    --bg:#131719; --surface:#1b2124; --surface-2:#20272a; --raise:#232b2e;
+    --text:#e5e8e8; --text-dim:#98a3a7; --text-faint:#6c777b;
+    --border:#2d3538; --border-strong:#3b4448;
+    --accent:#d3873c; --accent-ink:#1b1204; --accent-weak:#33281b; --accent-line:#5a4a31;
+    --link:#68b2ab;
+    --good:#5fa06e; --warn:#c99a3f; --danger:#d6605a;
+    --hm0:#242b2e; --hm1:#4a3a22; --hm2:#7a5423; --hm3:#a9762f; --hm4:#d3873c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -10px rgba(0,0,0,.5);
+    --shadow-pop:0 16px 50px -12px rgba(0,0,0,.7);
+  }}
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#131719; --surface:#1b2124; --surface-2:#20272a; --raise:#232b2e;
+    --text:#e5e8e8; --text-dim:#98a3a7; --text-faint:#6c777b;
+    --border:#2d3538; --border-strong:#3b4448;
+    --accent:#d3873c; --accent-ink:#1b1204; --accent-weak:#33281b; --accent-line:#5a4a31;
+    --link:#68b2ab;
+    --good:#5fa06e; --warn:#c99a3f; --danger:#d6605a;
+    --hm0:#242b2e; --hm1:#4a3a22; --hm2:#7a5423; --hm3:#a9762f; --hm4:#d3873c;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -10px rgba(0,0,0,.5);
+    --shadow-pop:0 16px 50px -12px rgba(0,0,0,.7);
+  }
+
+  /* ============ BASE ============ */
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  button,input,textarea,select{font:inherit;color:inherit}
+  button{cursor:pointer;background:none;border:none}
+  a{color:var(--link);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  ::selection{background:var(--accent-weak)}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--r-sm);
+    border:1px solid var(--border-strong);background:var(--raise);font-weight:500;font-size:14px;
+    transition:border-color .12s,background .12s,transform .05s}
+  .btn:hover{border-color:var(--accent-line);background:var(--surface-2)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .btn.primary:hover{filter:brightness(1.05)}
+  .btn.ghost{border-color:transparent;background:transparent}
+  .btn.ghost:hover{background:var(--surface-2)}
+  .btn.danger{color:var(--danger);border-color:transparent}
+  .btn.danger:hover{background:color-mix(in srgb,var(--danger) 12%,transparent);border-color:transparent}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.sm{padding:5px 9px;font-size:13px}
+
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field label{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim)}
+  .input{width:100%;padding:9px 11px;border-radius:var(--r-sm);border:1px solid var(--border-strong);
+    background:var(--surface);transition:border-color .12s}
+  .input:focus{border-color:var(--accent);outline:none}
+  .hint{font-size:12.5px;color:var(--text-faint)}
+  .err{font-size:13px;color:var(--danger)}
+
+  /* ============ AUTH ============ */
+  .gate{min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:
+      radial-gradient(circle at 12% 18%,color-mix(in srgb,var(--accent) 9%,transparent),transparent 42%),
+      radial-gradient(circle at 88% 82%,color-mix(in srgb,var(--link) 10%,transparent),transparent 45%),
+      var(--bg)}
+  .gate-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r);padding:30px;box-shadow:var(--shadow)}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .brand .mark{font-size:26px;line-height:1}
+  .brand .name{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.02em}
+  .gate-card .tag{color:var(--text-dim);font-size:13.5px;margin:0 0 22px}
+  .acct-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+  .acct-chips button{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 5px;border-radius:999px;
+    border:1px solid var(--border-strong);background:var(--raise);font-size:13px}
+  .acct-chips button:hover{border-color:var(--accent-line)}
+  .avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;background:var(--accent-weak);
+    display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--accent);flex:none}
+  .avatar.lg{width:34px;height:34px;font-size:15px}
+  .switch-line{display:flex;justify-content:space-between;align-items:center;margin-top:18px;font-size:13px}
+
+  /* ============ SHELL ============ */
+  .shell{display:grid;grid-template-columns:236px minmax(0,1fr) 304px;gap:26px;
+    max-width:1240px;margin:0 auto;padding:24px 24px 96px}
+  .rail{display:flex;flex-direction:column;gap:18px}
+  .rail-left{position:sticky;top:24px;align-self:start}
+  .rail-right{position:sticky;top:24px;align-self:start}
+
+  .side-brand{display:flex;align-items:center;gap:9px;padding:2px 6px 8px}
+  .side-brand .mark{font-size:20px}
+  .side-brand .name{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.02em}
+
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav button{display:flex;align-items:center;gap:11px;width:100%;padding:9px 11px;border-radius:var(--r-sm);
+    font-size:14px;font-weight:500;color:var(--text-dim);text-align:left;transition:background .12s,color .12s}
+  .nav button svg{width:17px;height:17px;flex:none;stroke-width:1.8}
+  .nav button:hover{background:var(--surface-2);color:var(--text)}
+  .nav button.on{background:var(--accent-weak);color:var(--accent)}
+  .nav .count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text-faint)}
+
+  .who{margin-top:6px;border-top:1px solid var(--border);padding-top:12px}
+  .who-row{display:flex;align-items:center;gap:9px;padding:6px;border-radius:var(--r-sm);width:100%}
+  .who-row:hover{background:var(--surface-2)}
+  .who-row .meta{min-width:0;text-align:left}
+  .who-row .meta b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .who-row .meta span{font-size:11.5px;color:var(--text-faint)}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
+  .card-pad{padding:16px}
+  .card h3{margin:0 0 12px;font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:.01em}
+
+  /* stats */
+  .stat-row{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);
+    border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+  .stat{background:var(--surface);padding:12px 14px}
+  .stat b{display:block;font-family:var(--display);font-size:21px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+  .stat span{font-size:11.5px;color:var(--text-dim);letter-spacing:.03em;text-transform:uppercase}
+  .stat.streak b{color:var(--accent)}
+
+  /* heatmap */
+  .heat{overflow-x:auto;padding-bottom:4px}
+  .heat svg{display:block}
+  .heat rect.cell{rx:2px}
+  .heat .lbl{font-family:var(--mono);font-size:8.5px;fill:var(--text-faint)}
+  .heat-legend{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;color:var(--text-faint)}
+  .heat-legend i{width:11px;height:11px;border-radius:2px;display:inline-block}
+
+  /* tag cloud */
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag-chip{font-family:var(--mono);font-size:12.5px;padding:3px 8px;border-radius:999px;
+    border:1px solid var(--border-strong);background:var(--raise);color:var(--text-dim);transition:all .12s}
+  .tag-chip:hover{border-color:var(--accent-line);color:var(--accent)}
+  .tag-chip.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .tag-chip .n{opacity:.6;margin-left:4px}
+
+  /* ============ COMPOSER ============ */
+  .composer{background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r);
+    box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s}
+  .composer:focus-within{border-color:var(--accent-line)}
+  .composer textarea{width:100%;border:none;background:none;resize:none;padding:15px 16px 6px;
+    font-size:15.5px;line-height:1.6;min-height:76px;max-height:420px;outline:none;display:block}
+  .composer .preview{padding:15px 16px 6px;font-size:15px;border-bottom:1px dashed var(--border)}
+  .comp-imgs{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 4px}
+  .comp-imgs figure{position:relative;margin:0}
+  .comp-imgs img{width:74px;height:74px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border)}
+  .comp-imgs button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;
+    background:var(--danger);color:#fff;font-size:12px;line-height:20px;text-align:center;box-shadow:var(--shadow)}
+  .comp-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid var(--border);background:var(--surface-2)}
+  .comp-bar .sp{flex:1}
+  .comp-count{font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .comp-bar select{padding:5px 8px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:var(--raise);font-size:13px}
+  .icon-btn{width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center;color:var(--text-dim)}
+  .icon-btn:hover{background:var(--raise);color:var(--text)}
+  .icon-btn svg{width:17px;height:17px;stroke-width:1.8}
+  .icon-btn.on{color:var(--accent);background:var(--accent-weak)}
+  .kbd{font-family:var(--mono);font-size:11px;padding:1px 5px;border:1px solid var(--border-strong);
+    border-bottom-width:2px;border-radius:5px;color:var(--text-faint);background:var(--raise)}
+
+  /* ============ FILTER BAR ============ */
+  .filterbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px 2px 12px;font-size:13px}
+  .filterbar .active{display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 10px;
+    border-radius:999px;background:var(--accent-weak);color:var(--accent);font-weight:500}
+  .filterbar .active button{color:inherit;font-size:14px;line-height:1}
+  .search-wrap{position:relative;flex:1;min-width:180px}
+  .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text-faint)}
+  .search-wrap input{width:100%;padding:7px 10px 7px 31px;border-radius:999px;border:1px solid var(--border-strong);background:var(--surface)}
+  .search-wrap input:focus{border-color:var(--accent);outline:none}
+
+  /* ============ MEMO ============ */
+  .feed{display:flex;flex-direction:column;gap:12px}
+  .memo{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;
+    box-shadow:var(--shadow);transition:border-color .12s}
+  .memo:hover{border-color:var(--border-strong)}
+  .memo.pinned{border-color:var(--accent-line)}
+  .memo-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12.5px;color:var(--text-faint)}
+  .memo-head .who-name{font-weight:600;color:var(--text-dim)}
+  .memo-head time{font-family:var(--mono);font-size:11.5px}
+  .memo-head .vis{font-size:11px;padding:1px 6px;border-radius:999px;border:1px solid var(--border-strong)}
+  .memo-head .pin-flag{color:var(--accent)}
+  .memo-head .sp{flex:1}
+  .memo-menu{position:relative}
+  .memo-menu>button{width:26px;height:26px;border-radius:6px;color:var(--text-faint)}
+  .memo-menu>button:hover{background:var(--surface-2);color:var(--text)}
+  .menu-pop{position:absolute;right:0;top:30px;z-index:20;background:var(--raise);border:1px solid var(--border);
+    border-radius:var(--r-sm);box-shadow:var(--shadow-pop);padding:5px;min-width:160px;display:flex;flex-direction:column}
+  .menu-pop button{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:6px;font-size:13.5px;text-align:left}
+  .menu-pop button:hover{background:var(--surface-2)}
+  .menu-pop button.danger{color:var(--danger)}
+  .menu-pop hr{border:none;border-top:1px solid var(--border);margin:4px 0}
+
+  .prose{overflow-wrap:break-word;word-break:break-word}
+  .prose>*:first-child{margin-top:0}
+  .prose>*:last-child{margin-bottom:0}
+  .prose h1,.prose h2,.prose h3,.prose h4{font-family:var(--display);line-height:1.3;margin:1em 0 .4em;text-wrap:balance}
+  .prose h1{font-size:1.4em}.prose h2{font-size:1.22em}.prose h3{font-size:1.08em}.prose h4{font-size:1em}
+  .prose p{margin:.5em 0}
+  .prose ul,.prose ol{margin:.5em 0;padding-left:1.4em}
+  .prose li{margin:.2em 0}
+  .prose li.task{list-style:none;margin-left:-1.4em;padding-left:1.4em;position:relative}
+  .prose li.task input{position:absolute;left:0;top:.3em}
+  .prose blockquote{margin:.6em 0;padding:.2em 0 .2em 12px;border-left:3px solid var(--accent-line);color:var(--text-dim)}
+  .prose code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:.12em .38em;border-radius:5px}
+  .prose pre{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-sm);
+    padding:12px 13px;overflow-x:auto;margin:.7em 0}
+  .prose pre code{background:none;padding:0;font-size:.86em;line-height:1.5}
+  .prose hr{border:none;border-top:1px solid var(--border-strong);margin:1em 0}
+  .prose a{text-decoration:underline;text-underline-offset:2px}
+  .prose table{border-collapse:collapse;width:100%;margin:.7em 0;font-size:.92em;display:block;overflow-x:auto}
+  .prose th,.prose td{border:1px solid var(--border-strong);padding:6px 10px;text-align:left}
+  .prose th{background:var(--surface-2);font-weight:600}
+  .prose img{border-radius:var(--r-sm);border:1px solid var(--border);margin:.4em 0}
+  .prose .in-tag{font-family:var(--mono);font-size:.92em;color:var(--accent);cursor:pointer}
+  .prose .in-tag:hover{text-decoration:underline}
+
+  .memo-imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin-top:10px}
+  .memo-imgs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border);cursor:zoom-in}
+  .memo-imgs.single{grid-template-columns:minmax(0,320px)}
+  .memo-imgs.single img{aspect-ratio:auto;max-height:360px;width:auto;max-width:100%}
+
+  .memo-edit textarea{width:100%;border:1px solid var(--accent-line);border-radius:var(--r-sm);background:var(--surface-2);
+    padding:10px 12px;resize:vertical;min-height:90px;font-size:15px;line-height:1.6;outline:none}
+  .memo-edit .row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+  .empty{text-align:center;padding:54px 20px;color:var(--text-faint)}
+  .empty .big{font-size:30px;margin-bottom:8px}
+  .empty p{margin:4px 0}
+
+  .load-more{margin:16px auto 0;display:block}
+
+  /* ============ MODAL ============ */
+  .overlay{position:fixed;inset:0;background:color-mix(in srgb,#0a0f11 55%,transparent);
+    display:grid;place-items:center;padding:20px;z-index:100;backdrop-filter:blur(2px)}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+    box-shadow:var(--shadow-pop);max-width:520px;width:100%;max-height:88vh;overflow-y:auto}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border)}
+  .modal-head h2{margin:0;font-family:var(--display);font-size:17px}
+  .modal-body{padding:18px}
+  .modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:14px 18px;border-top:1px solid var(--border)}
+  textarea.code-out{width:100%;min-height:180px;font-family:var(--mono);font-size:12px;border:1px solid var(--border-strong);
+    border-radius:var(--r-sm);background:var(--surface-2);padding:10px;resize:vertical}
+  .lightbox{position:fixed;inset:0;background:rgba(8,10,12,.9);display:grid;place-items:center;z-index:200;padding:24px}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:var(--r-sm)}
+
+  .krow{display:flex;justify-content:space-between;padding:6px 0;font-size:13.5px;border-bottom:1px solid var(--border)}
+  .krow:last-child{border:none}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--text);color:var(--bg);
+    padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-pop);z-index:300}
+
+  .seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--r-sm);overflow:hidden}
+  .seg button{padding:6px 12px;font-size:13px;color:var(--text-dim)}
+  .seg button.on{background:var(--accent-weak);color:var(--accent)}
+  .seg button+button{border-left:1px solid var(--border-strong)}
+
+  /* ============ MOLA / OYUN ============ */
+  .game-card{max-width:520px}
+  .game-head{display:flex;align-items:flex-end;gap:18px;margin-bottom:16px;flex-wrap:wrap}
+  .game-stat{display:flex;flex-direction:column;line-height:1.15}
+  .game-stat b{font-family:var(--display);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .game-stat span{font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+  .game-head .sp{flex:1}
+  .game-status{margin-top:14px;font-weight:600;min-height:1.3em}
+  .game-status .rec{color:var(--accent)}
+  .mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .mem-card{aspect-ratio:1;border-radius:var(--r-sm);border:1px solid var(--border-strong);
+    background:var(--surface-2);font-size:26px;display:grid;place-items:center;
+    transition:transform .1s,background .12s,border-color .12s}
+  .mem-card:not(:disabled):hover{border-color:var(--accent-line);transform:translateY(-1px)}
+  .mem-card.open{background:var(--raise);border-color:var(--accent-line)}
+  .mem-card.matched{background:var(--accent-weak);border-color:var(--accent-line);opacity:.65}
+  .math-q{font-family:var(--display);font-size:34px;font-weight:700;text-align:center;
+    padding:20px 0 16px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .math-in{font-size:20px;text-align:center;font-family:var(--mono);max-width:180px;margin:0 auto;display:block}
+  .game-card.flash-bad{animation:flashbad .22s ease}
+  @keyframes flashbad{50%{background:color-mix(in srgb,var(--danger) 16%,var(--surface))}}
+  @media (max-width:560px){ .mem-grid{grid-template-columns:repeat(3,1fr)} }
+
+  .name-field{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .name-field label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim)}
+  .name-field input{padding:6px 10px;border-radius:var(--r-sm);border:1px solid var(--border-strong);
+    background:var(--surface);max-width:200px}
+  .name-field input:focus{border-color:var(--accent);outline:none}
+
+  /* ---- skor tablosu ---- */
+  .sb{margin-top:16px}
+  .sb h4{margin:0 0 8px;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.01em;
+    display:flex;align-items:center;gap:8px}
+  .sb .top{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:500}
+  .sb-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-sm)}
+  table.sb-table{border-collapse:collapse;width:100%;font-size:12.5px}
+  table.sb-table th{background:var(--surface-2);text-align:left;padding:6px 10px;font-weight:600;
+    font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-dim);white-space:nowrap}
+  table.sb-table td{padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap}
+  table.sb-table td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  table.sb-table tr.me td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+  table.sb-table tr:nth-child(2) .pts{color:var(--accent);font-weight:700}
+  .sb-empty{padding:14px 10px;font-size:12.5px;color:var(--text-faint)}
+  .sb-clear{margin-top:8px;font-size:12px}
+  .res-badge{font-size:10.5px;padding:1px 7px;border-radius:999px;font-weight:600}
+  .res-badge.win{background:color-mix(in srgb,var(--good) 20%,transparent);color:var(--good)}
+  .res-badge.loss{background:color-mix(in srgb,var(--danger) 16%,transparent);color:var(--danger)}
+  .res-badge.draw{background:var(--surface-2);color:var(--text-dim)}
+
+  /* ---- satranç ---- */
+  .chess-modes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .chess-modes button{padding:6px 11px;border-radius:999px;border:1px solid var(--border-strong);
+    background:var(--raise);font-size:12.5px;color:var(--text-dim)}
+  .chess-modes button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .chess-layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:18px;align-items:start}
+  @media (max-width:720px){ .chess-layout{grid-template-columns:minmax(0,1fr)} }
+  .board-wrap{width:100%;max-width:440px;flex:none}
+  .board{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+    width:100%;aspect-ratio:1;border:1px solid var(--border-strong);
+    border-radius:6px;overflow:hidden;user-select:none;touch-action:manipulation;color-scheme:only light;
+    forced-color-adjust:none}
+  .sq{position:relative;display:grid;place-items:center;font-size:min(7vw,34px);line-height:1;cursor:pointer;
+    min-width:0;min-height:0;forced-color-adjust:none}
+  /* gradyan arka planlar Chrome "force dark" tarafından ters çevrilmez */
+  .sq.lt{background-image:linear-gradient(#f0e6cf,#e6d9ba)}
+  .sq.dk{background-image:linear-gradient(#bd8e67,#a97c56)}
+  .sq .pc{line-height:1;background:transparent}
+  .sq .pc.w{color:#fbf8f1;text-shadow:0 1px 2px rgba(0,0,0,.6),0 0 3px rgba(0,0,0,.35)}
+  .sq .pc.b{color:#131313;text-shadow:0 1px 2px rgba(255,255,255,.4)}
+  .sq.sel::after{content:"";position:absolute;inset:0;background:color-mix(in srgb,var(--accent) 45%,transparent)}
+  .sq.mv::before{content:"";position:absolute;width:30%;height:30%;border-radius:50%;
+    background:color-mix(in srgb,var(--accent) 55%,transparent)}
+  .sq.mv.cap::before{width:82%;height:82%;background:none;border:3px solid color-mix(in srgb,var(--accent) 60%,transparent);border-radius:50%}
+  .sq.chk{box-shadow:inset 0 0 0 3px var(--danger)}
+  .sq .co{position:absolute;font-size:8px;font-family:var(--mono);opacity:.55;font-weight:600}
+  .sq .co.f{right:2px;bottom:1px}
+  .sq .co.r{left:2px;top:1px}
+  .chess-side{display:flex;flex-direction:column;gap:12px}
+  .chess-status{font-weight:600;font-size:14px;min-height:1.3em}
+  .chess-status .sub{display:block;font-weight:400;font-size:12px;color:var(--text-dim);margin-top:2px}
+  .cap-row{display:flex;flex-wrap:wrap;gap:1px;min-height:22px;font-size:17px;line-height:1}
+  .cap-row .pc.w{color:#8a8a8a}
+  .cap-row .adv{font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-left:4px;align-self:center}
+  .movelist{max-height:150px;overflow-y:auto;font-family:var(--mono);font-size:11.5px;line-height:1.7;
+    border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 8px;column-gap:12px}
+  .movelist .mv-no{color:var(--text-faint)}
+  .promo-btn:hover{background:var(--surface-2);border-color:var(--accent-line)}
+
+  .acct-manage{display:flex;flex-direction:column;gap:8px}
+  .acct-manage .a{display:flex;align-items:center;gap:10px;padding:9px;border:1px solid var(--border);border-radius:var(--r-sm)}
+  .acct-manage .a .sp{flex:1}
+  .badge{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--accent-weak);color:var(--accent);font-weight:600}
+
+  /* ============ ENGAGEMENT ============ */
+  .prompt-strip{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 2px 10px;padding:9px 12px;
+    border:1px dashed var(--accent-line);border-radius:var(--r-sm);background:color-mix(in srgb,var(--accent) 6%,var(--surface));font-size:13px}
+  .prompt-strip .pl{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+  .prompt-strip .pq{color:var(--text);font-style:italic}
+  .prompt-strip .btn.sm{padding:4px 10px}
+  .goal-pill{margin-top:10px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;text-align:center;
+    background:var(--surface-2);color:var(--text-dim)}
+  .goal-pill.on{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+  .otd-strip{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:0 0 12px;padding:10px 12px;
+    border:1px solid var(--accent-line);border-radius:var(--r-sm);background:var(--accent-weak);transition:border-color .12s}
+  .otd-strip:hover{border-color:var(--accent)}
+  .otd-strip .otd-badge{flex:none;font-size:11px;font-weight:700;color:var(--accent);text-transform:lowercase}
+  .otd-strip .otd-text{font-size:13px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .otd-row{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;padding:7px 8px;border-radius:6px}
+  .otd-row:hover{background:var(--surface-2)}
+  .otd-row .otd-when{font-size:11px;font-weight:700;color:var(--accent)}
+  .otd-row .otd-snip{font-size:12.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badge-count{font-family:var(--mono);font-size:12px;color:var(--text-faint);font-weight:500}
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px}
+  .badge-cell{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 3px;border-radius:var(--r-sm);
+    border:1px solid var(--border);background:var(--surface-2);text-align:center;opacity:.4;filter:grayscale(1);
+    transition:opacity .2s,filter .2s}
+  .badge-cell.on{opacity:1;filter:none;border-color:var(--accent-line);background:var(--accent-weak)}
+  .badge-cell .bi{font-size:18px;line-height:1}
+  .badge-cell .bl{font-size:8.5px;font-weight:600;color:var(--text-dim);line-height:1.15}
+
+  /* ============ MOBILE ============ */
+  .tabbar{display:none}
+  @media (max-width:1080px){
+    .shell{grid-template-columns:minmax(0,1fr);gap:0;padding:16px 14px 90px;max-width:640px}
+    .rail-left{display:none}
+    .rail-right{position:static;margin-top:20px}
+    .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);
+      border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+    .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;
+      font-size:10.5px;color:var(--text-faint)}
+    .tabbar button svg{width:19px;height:19px;stroke-width:1.8}
+    .tabbar button.on{color:var(--accent)}
+    .mobile-top{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+    .mobile-top .name{font-family:var(--display);font-weight:700;font-size:18px}
+    .mobile-top .sp{flex:1}
+  }
+  @media (min-width:1081px){ .mobile-top{display:none} }
+</style>
+
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="sr-live" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.12.1/chess.min.js" integrity="sha512-rIescAjPgXHz3WaxrSjaOl5iZfvBVIehYe+EF+d+DAdFNgV10QBT8d5APBjcGFKES0iVUYjBilvpck7gOe7CLg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage-compat.js"></script>
+<script>
+(() => {
+"use strict";
+
+/* ========================================================================
+   Merlfy — kişisel, çok profilli memo defteri. Tek dosya, backend yok.  [v8]
+   Veriler tarayıcıda IndexedDB'de saklanır. Her profil kendi alanında.
+   ===================================================================== */
+
+/* ---------- i18n ---------- */
+const I18N = {
+  tr:{
+    tagline:"Düşün, yaz, unutma.",
+    setup_title:"Merlfy'ye hoş geldin",
+    setup_sub:"Bu cihazda ilk profili oluştur. Veriler yalnızca bu tarayıcıda kalır.",
+    username:"Kullanıcı adı", displayname:"Görünen ad", password:"Parola", password2:"Parola (tekrar)",
+    create_owner:"Profili oluştur", login:"Giriş yap", logout:"Çıkış",
+    have_demo:"Önce denemek ister misin? Demo profilini aç",
+    new_account:"Yeni profil", back_to_login:"Girişe dön",
+    gate_have_backup:"Zaten bir hesabın var mı? Yedekten içe aktar",
+    gate_import_hint:"Merlfy başka cihaza senkron olmaz — hesabını buraya getirmek için o cihazdan aldığın yedek (JSON) dosyasını içe aktar.",
+    wrong_pass:"Kullanıcı adı veya parola hatalı.", pass_short:"Parola en az 6 karakter olmalı.",
+    pass_mismatch:"Parolalar eşleşmiyor.", user_taken:"Bu kullanıcı adı zaten var.",
+    user_required:"Kullanıcı adı gerekli.",
+    nav_feed:"Akış", nav_explore:"Keşfet", nav_calendar:"Takvim", nav_trash:"Çöp Kutusu", nav_settings:"Ayarlar",
+    compose_ph:"Ne düşünüyorsun? #etiket ekleyebilirsin…",
+    save:"Kaydet", saving:"Kaydediliyor…", cancel:"Vazgeç", preview:"Önizleme", add_image:"Görsel ekle",
+    vis_private:"Özel", vis_workspace:"Çalışma alanı", vis_public:"Herkese açık",
+    empty_feed_t:"Henüz memo yok", empty_feed_p:"Yukarıdan ilk notunu yaz. Ctrl/⌘ + Enter ile kaydedebilirsin.",
+    empty_explore_t:"Paylaşılan memo yok", empty_explore_p:"Çalışma alanı veya herkese açık memolar burada görünür.",
+    empty_trash_t:"Çöp kutusu boş", empty_trash_p:"Silinen memolar 30 gün burada tutulur.",
+    empty_filter_t:"Eşleşen memo yok", empty_filter_p:"Filtreleri temizlemeyi dene.",
+    load_more:"Daha fazla", search_ph:"Ara…",
+    edit:"Düzenle", delete:"Sil", restore:"Geri yükle", delete_forever:"Kalıcı sil",
+    pin:"Sabitle", unpin:"Sabitlemeyi kaldır", copy_text:"Metni kopyala", copy_link:"Bağlantıyı kopyala",
+    pinned:"Sabit", just_now:"az önce", min_ago:"dk", hr_ago:"sa", yesterday:"dün", edited:"düzenlendi",
+    deleted_in:"gün sonra silinir",
+    stat_memos:"memo", stat_days:"aktif gün", stat_tags:"etiket", stat_streak:"gün seri",
+    heat_less:"az", heat_more:"çok", tags_title:"Etiketler", no_tags:"Henüz etiket yok",
+    activity_title:"Aktivite", stats_title:"Özet",
+    settings_profile:"Profil", settings_appearance:"Görünüm", settings_accounts:"Profiller",
+    settings_data:"Veri", settings_telegram:"Telegram",
+    theme:"Tema", theme_system:"Sistem", theme_light:"Açık", theme_dark:"Koyu",
+    language:"Dil", avatar_url:"Avatar (URL ya da yükle)", save_profile:"Profili kaydet",
+    change_pass:"Parola değiştir", current_pass:"Mevcut parola", new_pass:"Yeni parola",
+    allow_reg:"Girişte yeni profil oluşturmaya izin ver",
+    add_account:"Profil ekle", owner:"sahip", remove:"Kaldır",
+    remove_account_q:"profilini ve tüm memolarını sil? Bu geri alınamaz.",
+    export:"Dışa aktar (JSON)", export_sub:"Tüm profillerin yedeği. Metni kopyala veya dosyayı indir.",
+    import:"İçe aktar", import_sub:"Yedek JSON'u yapıştır ya da dosya seç. Mevcut veriyle birleştirilir.",
+    copy:"Kopyala", copied:"Kopyalandı", download:"Dosyayı indir", choose_file:"Dosya seç",
+    import_done:"içe aktarıldı", import_bad:"Geçersiz yedek dosyası.",
+    tg_intro:"merlfy-bot.mjs betiğini kendi bilgisayarında çalıştır; Telegram'a yazdıkların bir JSON dosyasına düşer. O dosyayı buradan içe aktar.",
+    tg_pair:"Eşleştirme kodun", tg_pair_help:"Telegram'da bota şunu yaz:",
+    tg_import:"Telegram kutusunu içe aktar", tg_import_all:"Tüm mesajları bu profile aktar (kod eşleşmesini yok say)",
+    tg_none:"Yeni mesaj yok.", tg_imported:"mesaj memo olarak eklendi.",
+    shortcuts:"Kısayollar", sc_new:"Yeni memo", sc_search:"Aramaya git", sc_feed:"Akış",
+    sc_explore:"Keşfet", sc_help:"Bu pencere", sc_close:"Kapat / vazgeç",
+    confirm_del_forever:"Bu memo kalıcı olarak silinsin mi?",
+    from_telegram:"Telegram'dan",
+    nav_break:"Mola",
+    break_intro:"Memo yazmaktan sıkıldıysan kısa bir mola ver.",
+    game_memory:"Hafıza", game_math:"Hızlı Matematik",
+    game_memory_hint:"Kartları çevir, çiftleri eşleştir.",
+    game_math_hint:"30 saniyede kaç soru çözebilirsin?",
+    card_face_down:"kapalı kart", filter_has_image:"Sadece görselli memolar",
+    game_moves:"hamle", game_time:"süre", game_best:"en iyi", game_new:"Yeni oyun",
+    game_won:"Bitti!", game_start:"Başla", game_restart:"Tekrar",
+    game_score:"skor", game_streak:"seri", game_left:"kalan", game_over:"Süre doldu",
+    game_record:"yeni rekor!",
+    game_chess:"Satranç",
+    player_name:"Oyuncu adı",
+    sb_title:"Skor Tablosu", sb_top:"En yüksek skor", sb_player:"Oyuncu", sb_points:"Puan",
+    sb_date:"Tarih", sb_empty:"Henüz skor yok — ilk oyunu sen oyna.", sb_clear:"Tabloyu temizle",
+    sb_clear_q:"skor tablosu tamamen silinsin mi?", sb_result:"Sonuç", sb_moves:"Hamle",
+    chess_vs_ai:"Bilgisayara karşı", chess_pass:"İki kişi (sırayla)", chess_online:"Online (gerçek zamanlı)",
+    chess_new:"Yeni oyun", chess_ai_level:"Zorluk", chess_easy:"Kolay", chess_normal:"Orta", chess_hard:"Zor",
+    chess_you_white:"Sen beyazsın", chess_you_black:"Sen siyahsın", chess_flip:"Tahtayı çevir",
+    chess_white:"Beyaz", chess_black:"Siyah", chess_turn_w:"Beyaz oynayacak", chess_turn_b:"Siyah oynayacak",
+    chess_check:"Şah!", chess_checkmate:"Şah mat", chess_stalemate:"Pat — berabere",
+    chess_draw:"Berabere", chess_wins:"kazandı", chess_you:"Sen", chess_ai:"Bilgisayar",
+    chess_captured:"Alınan taşlar", chess_moves:"Hamleler", chess_resign:"Pes et",
+    chess_resign_q:"Bu oyunu bırakıyor musun? Rakip kazanır.",
+    chess_undo:"Geri al", chess_ai_thinking:"Bilgisayar düşünüyor…",
+    chess_your_turn:"Sıra sende",
+    chess_name_w:"Beyaz oyuncu", chess_name_b:"Siyah oyuncu", chess_promote:"Terfi",
+    chess_need_lib:"Satranç motoru yüklenemedi (çevrimdışı olabilirsin). Sayfayı yeniden yükle.",
+    chess_online_intro:"Bir oyun oluştur ve kodu arkadaşına gönder, ya da aldığın kodla bir oyuna katıl.",
+    chess_online_new:"Yeni oyun oluştur", chess_online_code_ph:"6 haneli kod", chess_online_join_btn:"Katıl",
+    chess_online_not_found:"Oyun bulunamadı ya da zaten dolu.",
+    chess_online_waiting:"Bekleniyor", chess_online_waiting_short:"Rakip bekleniyor…",
+    chess_online_copy:"Kodu kopyala", chess_online_copied:"Kod kopyalandı.",
+    chess_online_cancel:"İptal et", chess_online_leave:"Lobiye dön", chess_online_you_are:"Sen",
+    chess_online_error:"Bağlantı hatası",
+    prompt_label:"Bugünün kıvılcımı", prompt_use:"Bunu yaz", prompt_shuffle:"Başka bir tane",
+    onthisday_title:"Geçen bugün", onthisday_year:"1 yıl önce", onthisday_years:"yıl önce",
+    onthisday_week:"geçen hafta bugün", onthisday_month:"geçen ay bugün", onthisday_days:"gün önce",
+    share:"Paylaş", card_share:"Kart olarak paylaş", card_prompt_share:"Soru-cevap kartı",
+    card_hint:"Görsele uzun bas ya da sağ tıkla → Görseli kaydet. Instagram / WhatsApp hikâyene at.",
+    surprise_btn:"Sürpriz anı", surprise_title:"Sürpriz anı", surprise_again:"Başka",
+    surprise_none:"Henüz sürpriz için yeterli anı yok.",
+    card_copy:"Görseli kopyala", card_download:"İndir", card_copied:"Görsel kopyalandı",
+    wrapped_btn:"Özetimi paylaş", wrapped_title:"Merlfy Karnem",
+    wrapped_memos:"memo", wrapped_days:"aktif gün", wrapped_streak:"gün seri", wrapped_words:"kelime",
+    wrapped_toptags:"En çok kullandığın etiketler", wrapped_since:"başlangıç",
+    badges_title:"Rozetler", badge_new:"Yeni rozet açıldı!", badges_progress:"açıldı",
+    streak_milestone_1:"gün oldu!", streak_milestone_2:"Seriyi bozma.",
+    goal_done:"Bugünlük yazdın", goal_todo:"Bugün henüz yazmadın — 1 satır yeter",
+    b_first:"İlk kıvılcım", b_first_d:"İlk memonu yazdın",
+    b_streak7:"Alev", b_streak7_d:"7 gün üst üste yazdın",
+    b_streak30:"Zirve", b_streak30_d:"30 gün üst üste yazdın",
+    b_century:"Yüzler kulübü", b_century_d:"100 memo",
+    b_night:"Gece kuşu", b_night_d:"Gece 00.00–05.00 arası memo",
+    b_early:"Erkenci", b_early_d:"Sabah 05.00–08.00 arası memo",
+    b_tagger:"Etiketçi", b_tagger_d:"10 farklı etiket kullandın",
+    b_pics:"Albüm", b_pics_d:"Görselli 10 memo",
+    b_days30:"Maratoncu", b_days30_d:"30 farklı aktif gün",
+    b_words:"Kalem ustası", b_words_d:"Toplam 5.000 kelime",
+    wc_word:"kelime", wc_char:"karakter",
+    chess_pgn:"PGN kopyala", chess_pgn_copied:"PGN kopyalandı", chess_pgn_empty:"Henüz hamle yok.",
+    recap_pick:"Hangi dönem?", recap_all:"Tüm zamanlar", recap_30:"Son 30 gün", recap_7:"Son 7 gün",
+  },
+  en:{
+    tagline:"Think it, write it, keep it.",
+    setup_title:"Welcome to Merlfy",
+    setup_sub:"Create the first profile on this device. Data stays in this browser only.",
+    username:"Username", displayname:"Display name", password:"Password", password2:"Password (repeat)",
+    create_owner:"Create profile", login:"Log in", logout:"Log out",
+    have_demo:"Want to try first? Open the demo profile",
+    new_account:"New profile", back_to_login:"Back to login",
+    gate_have_backup:"Already have an account? Import from backup",
+    gate_import_hint:"Merlfy doesn't sync across devices — to bring your account here, import the backup (JSON) file you saved from that device.",
+    wrong_pass:"Wrong username or password.", pass_short:"Password must be at least 6 characters.",
+    pass_mismatch:"Passwords don't match.", user_taken:"That username already exists.",
+    user_required:"Username is required.",
+    nav_feed:"Stream", nav_explore:"Explore", nav_calendar:"Calendar", nav_trash:"Trash", nav_settings:"Settings",
+    compose_ph:"What are you thinking? You can add #tags…",
+    save:"Save", saving:"Saving…", cancel:"Cancel", preview:"Preview", add_image:"Add image",
+    vis_private:"Private", vis_workspace:"Workspace", vis_public:"Public",
+    empty_feed_t:"No memos yet", empty_feed_p:"Write your first note above. Save with Ctrl/⌘ + Enter.",
+    empty_explore_t:"Nothing shared", empty_explore_p:"Workspace and public memos show up here.",
+    empty_trash_t:"Trash is empty", empty_trash_p:"Deleted memos stay here for 30 days.",
+    empty_filter_t:"No matching memos", empty_filter_p:"Try clearing the filters.",
+    load_more:"Load more", search_ph:"Search…",
+    edit:"Edit", delete:"Delete", restore:"Restore", delete_forever:"Delete forever",
+    pin:"Pin", unpin:"Unpin", copy_text:"Copy text", copy_link:"Copy link",
+    pinned:"Pinned", just_now:"just now", min_ago:"m", hr_ago:"h", yesterday:"yesterday", edited:"edited",
+    deleted_in:"days until removed",
+    stat_memos:"memos", stat_days:"active days", stat_tags:"tags", stat_streak:"day streak",
+    heat_less:"less", heat_more:"more", tags_title:"Tags", no_tags:"No tags yet",
+    activity_title:"Activity", stats_title:"Summary",
+    settings_profile:"Profile", settings_appearance:"Appearance", settings_accounts:"Profiles",
+    settings_data:"Data", settings_telegram:"Telegram",
+    theme:"Theme", theme_system:"System", theme_light:"Light", theme_dark:"Dark",
+    language:"Language", avatar_url:"Avatar (URL or upload)", save_profile:"Save profile",
+    change_pass:"Change password", current_pass:"Current password", new_pass:"New password",
+    allow_reg:"Allow creating new profiles from the login screen",
+    add_account:"Add profile", owner:"owner", remove:"Remove",
+    remove_account_q:"— delete this profile and all its memos? This cannot be undone.",
+    export:"Export (JSON)", export_sub:"Backup of every profile. Copy the text or download the file.",
+    import:"Import", import_sub:"Paste backup JSON or pick a file. Merged with current data.",
+    copy:"Copy", copied:"Copied", download:"Download file", choose_file:"Choose file",
+    import_done:"imported", import_bad:"Invalid backup file.",
+    tg_intro:"Run the merlfy-bot.mjs script on your own computer; whatever you send to Telegram lands in a JSON file. Import that file here.",
+    tg_pair:"Your pairing code", tg_pair_help:"In Telegram, send the bot:",
+    tg_import:"Import Telegram inbox", tg_import_all:"Import every message to this profile (ignore pairing code)",
+    tg_none:"No new messages.", tg_imported:"messages added as memos.",
+    shortcuts:"Shortcuts", sc_new:"New memo", sc_search:"Go to search", sc_feed:"Stream",
+    sc_explore:"Explore", sc_help:"This dialog", sc_close:"Close / cancel",
+    confirm_del_forever:"Delete this memo permanently?",
+    from_telegram:"from Telegram",
+    nav_break:"Break",
+    break_intro:"Tired of writing memos? Take a short break.",
+    game_memory:"Memory", game_math:"Quick Math",
+    game_memory_hint:"Flip the cards, match the pairs.",
+    game_math_hint:"How many can you solve in 30 seconds?",
+    card_face_down:"face-down card", filter_has_image:"Only memos with images",
+    game_moves:"moves", game_time:"time", game_best:"best", game_new:"New game",
+    game_won:"Done!", game_start:"Start", game_restart:"Again",
+    game_score:"score", game_streak:"streak", game_left:"left", game_over:"Time's up",
+    game_record:"new record!",
+    game_chess:"Chess",
+    player_name:"Player name",
+    sb_title:"Scoreboard", sb_top:"High score", sb_player:"Player", sb_points:"Points",
+    sb_date:"Date", sb_empty:"No scores yet — be the first to play.", sb_clear:"Clear scoreboard",
+    sb_clear_q:"clear the whole scoreboard?", sb_result:"Result", sb_moves:"Moves",
+    chess_vs_ai:"Vs computer", chess_pass:"Two players (hotseat)", chess_online:"Online (live)",
+    chess_new:"New game", chess_ai_level:"Difficulty", chess_easy:"Easy", chess_normal:"Normal", chess_hard:"Hard",
+    chess_you_white:"You are white", chess_you_black:"You are black", chess_flip:"Flip board",
+    chess_white:"White", chess_black:"Black", chess_turn_w:"White to move", chess_turn_b:"Black to move",
+    chess_check:"Check!", chess_checkmate:"Checkmate", chess_stalemate:"Stalemate — draw",
+    chess_draw:"Draw", chess_wins:"wins", chess_you:"You", chess_ai:"Computer",
+    chess_captured:"Captured", chess_moves:"Moves", chess_resign:"Resign",
+    chess_resign_q:"Resign this game? Your opponent wins.",
+    chess_undo:"Undo", chess_ai_thinking:"Computer is thinking…",
+    chess_your_turn:"Your turn",
+    chess_name_w:"White player", chess_name_b:"Black player", chess_promote:"Promote",
+    chess_need_lib:"Chess engine failed to load (you may be offline). Reload the page.",
+    chess_online_intro:"Create a game and send the code to a friend, or join with a code you received.",
+    chess_online_new:"Create game", chess_online_code_ph:"6-letter code", chess_online_join_btn:"Join",
+    chess_online_not_found:"Game not found or already full.",
+    chess_online_waiting:"Waiting", chess_online_waiting_short:"Waiting for opponent…",
+    chess_online_copy:"Copy code", chess_online_copied:"Code copied.",
+    chess_online_cancel:"Cancel", chess_online_leave:"Back to lobby", chess_online_you_are:"You are",
+    chess_online_error:"Connection error",
+    prompt_label:"Today's spark", prompt_use:"Write this", prompt_shuffle:"Another one",
+    onthisday_title:"On this day", onthisday_year:"1 year ago", onthisday_years:"years ago",
+    onthisday_week:"a week ago today", onthisday_month:"a month ago today", onthisday_days:"days ago",
+    share:"Share", card_share:"Share as card", card_prompt_share:"Q&A card",
+    card_hint:"Long-press or right-click the image → Save image. Post it to your story.",
+    surprise_btn:"Surprise memory", surprise_title:"Surprise memory", surprise_again:"Another",
+    surprise_none:"Not enough memories yet for a surprise.",
+    card_copy:"Copy image", card_download:"Download", card_copied:"Image copied",
+    wrapped_btn:"Share my recap", wrapped_title:"My Merlfy Recap",
+    wrapped_memos:"memos", wrapped_days:"active days", wrapped_streak:"day streak", wrapped_words:"words",
+    wrapped_toptags:"Your most-used tags", wrapped_since:"since",
+    badges_title:"Badges", badge_new:"New badge unlocked!", badges_progress:"unlocked",
+    streak_milestone_1:"days!", streak_milestone_2:"Don't break the chain.",
+    goal_done:"You've written today", goal_todo:"Nothing today yet — one line counts",
+    b_first:"First spark", b_first_d:"You wrote your first memo",
+    b_streak7:"Flame", b_streak7_d:"7 days in a row",
+    b_streak30:"Summit", b_streak30_d:"30 days in a row",
+    b_century:"Century club", b_century_d:"100 memos",
+    b_night:"Night owl", b_night_d:"A memo between 00:00–05:00",
+    b_early:"Early bird", b_early_d:"A memo between 05:00–08:00",
+    b_tagger:"Tagger", b_tagger_d:"Used 10 different tags",
+    b_pics:"Album", b_pics_d:"10 memos with images",
+    b_days30:"Marathoner", b_days30_d:"30 distinct active days",
+    b_words:"Wordsmith", b_words_d:"5,000 words total",
+    wc_word:"words", wc_char:"chars",
+    chess_pgn:"Copy PGN", chess_pgn_copied:"PGN copied", chess_pgn_empty:"No moves yet.",
+    recap_pick:"Which period?", recap_all:"All time", recap_30:"Last 30 days", recap_7:"Last 7 days",
+  }
+};
+let LANG = (localStorage.getItem("merlfy.lang")) || (navigator.language||"").slice(0,2) || "tr";
+if(!I18N[LANG]) LANG = "tr";
+const t = k => (I18N[LANG] && I18N[LANG][k]) || I18N.tr[k] || k;
+
+/* ---------- theme ---------- */
+function applyTheme(v){
+  if(v==="light"||v==="dark") document.documentElement.dataset.theme=v;
+  else delete document.documentElement.dataset.theme;
+}
+applyTheme(localStorage.getItem("merlfy.theme")||"system");
+
+/* ---------- tiny DOM helpers ---------- */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+function el(tag, attrs={}, ...kids){
+  const n = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(v==null||v===false) continue;
+    if(k==="class") n.className=v;
+    else if(k==="html") n.innerHTML=v;
+    else if(k==="text") n.textContent=v;
+    else if(k.startsWith("on")&&typeof v==="function") n.addEventListener(k.slice(2),v);
+    else if(k==="dataset") Object.assign(n.dataset,v);
+    else n.setAttribute(k,v);
+  }
+  for(const kid of kids.flat()){ if(kid==null||kid===false) continue;
+    n.append(kid.nodeType? kid : document.createTextNode(String(kid))); }
+  return n;
+}
+const uid = ()=> Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+function toast(msg){
+  $$(".toast").forEach(x=>x.remove());
+  const n = el("div",{class:"toast",role:"status",text:msg}); document.body.append(n);
+  const live = $("#sr-live"); if(live) live.textContent = msg;
+  setTimeout(()=>n.remove(), 2200);
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyAPqDI4dOE3bLFNNFGSJfEI9jjVlJId3uI",
+  authDomain: "merlfycom.firebaseapp.com",
+  projectId: "merlfycom",
+  storageBucket: "merlfycom.firebasestorage.app",
+  messagingSenderId: "1034596696904",
+  appId: "1:1034596696904:web:3696fa273c461ce827e97d",
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const fdb = firebase.firestore();
+const fstorage = firebase.storage();
+function usernameToEmail(u){ return u.trim().toLowerCase()+"@merlfy.local"; }
+
+/* ---------- Firestore-backed store shim ----------
+   Aynı idbGet/idbPut/idbAll/idbDel/idbByUser isimleri korunuyor ki dosyadaki
+   düzinelerce çağrı noktası değişmesin — arka planda artık IndexedDB değil
+   paylaşılan Firestore var. */
+async function idbGet(coll, id){
+  const snap = await fdb.collection(coll).doc(id).get();
+  return snap.exists ? snap.data() : undefined;
+}
+async function idbAll(coll){
+  const snap = await fdb.collection(coll).get();
+  return snap.docs.map(d=>d.data());
+}
+async function idbPut(coll, value){
+  if(coll==="resources" && value.dataUrl && value.dataUrl.startsWith("data:")){
+    const blob = await (await fetch(value.dataUrl)).blob();
+    const path = `resources/${value.userId}/${value.id}`;
+    const ref = fstorage.ref(path);
+    await ref.put(blob);
+    value = { ...value, dataUrl: await ref.getDownloadURL(), storagePath: path };
+  }
+  await fdb.collection(coll).doc(value.id).set(value);
+  return value;
+}
+async function idbDel(coll, id){
+  if(coll==="resources"){
+    try{ const d = await idbGet("resources",id); if(d && d.storagePath) await fstorage.ref(d.storagePath).delete(); }catch{}
+  }
+  await fdb.collection(coll).doc(id).delete();
+}
+async function idbByUser(coll, userId){
+  const snap = await fdb.collection(coll).where("userId","==",userId).get();
+  return snap.docs.map(d=>d.data());
+}
+
+/* ---------- data layer ---------- */
+let pendingProfile = null; // {username, displayName} — kayıt formu doldurur, ensureUserDoc tüketir
+async function ensureUserDoc(fbUser){
+  const ref = fdb.collection("users").doc(fbUser.uid);
+  const snap = await ref.get();
+  if(snap.exists) return snap.data();
+  const firstSnap = await fdb.collection("users").limit(1).get();
+  const prof = pendingProfile || {};
+  const uname = (prof.username || (fbUser.email||"user").split("@")[0]).slice(0,40);
+  const u = { id:fbUser.uid, username:uname, displayName:prof.displayName||uname, avatar:"",
+    role: firstSnap.empty ? "owner" : "member",
+    pairingCode: Math.random().toString(36).slice(2,8).toUpperCase(),
+    importedTg: [], createdAt: Date.now() };
+  await ref.set(u);
+  pendingProfile = null;
+  return u;
+}
+const store = {
+  async getSetting(k,def){ const snap = await fdb.collection("settings").doc("global").get();
+    const d = snap.exists ? snap.data() : {}; return (k in d) ? d[k] : def; },
+  async setSetting(k,v){ await fdb.collection("settings").doc("global").set({[k]:v},{merge:true}); },
+  async memos(userId){ return idbByUser("memos", userId); },
+  async allSharedMemos(){
+    const snap = await fdb.collection("memos").where("visibility","in",["workspace","public"]).get();
+    return snap.docs.map(d=>d.data()).filter(m=>!m.deletedAt);
+  },
+  async resource(id){ return idbGet("resources",id); },
+  async saveMemo(m){ if(m.updatedAt==null) m.updatedAt = m.createdAt||Date.now(); await idbPut("memos",m); return m; },
+};
+
+/* ---------- skor tablosu (Firestore, herkese açık ortak liderlik tablosu) ---------- */
+const scoreStore = {
+  async add(game, { player, score, meta }){
+    const rec = { id:uid(), game, player:(player||t("sb_player")).slice(0,40),
+      userId: state.user ? state.user.id : null, score: Math.round(score)||0,
+      date: Date.now(), meta: meta||{} };
+    await fdb.collection("scores").doc(rec.id).set(rec);
+    return rec;
+  },
+  async list(game){
+    // orderBy + where farklı alanlarda olursa Firestore composite index ister — bunun yerine
+    // tek alanlı where ile sınırlı sayıda çekip sıralamayı istemci tarafında yapıyoruz.
+    const snap = await fdb.collection("scores").where("game","==",game).limit(200).get();
+    return snap.docs.map(d=>d.data()).sort((a,b)=>(b.score-a.score)||(b.date-a.date)).slice(0,50);
+  },
+  async best(game){
+    const l = await scoreStore.list(game);
+    return l.length ? l[0] : null;
+  },
+  async clear(game){
+    if(!state.user) return;
+    const snap = await fdb.collection("scores").where("game","==",game).where("userId","==",state.user.id).get();
+    for(const d of snap.docs) await d.ref.delete();
+  },
+};
+
+/* ---------- image downscale ---------- */
+function fileToImage(file){
+  return new Promise((res,rej)=>{
+    if(!file.type.startsWith("image/")){ rej(new Error("not image")); return; }
+    const fr = new FileReader();
+    fr.onload = ()=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const max = 1600;
+        let {width:w, height:h} = img;
+        if(w>max||h>max){ const s=max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+        const cv = el("canvas"); cv.width=w; cv.height=h;
+        cv.getContext("2d").drawImage(img,0,0,w,h);
+        const type = file.type==="image/png" ? "image/png" : "image/jpeg";
+        res(cv.toDataURL(type, .85));
+      };
+      img.onerror = rej;
+      img.src = fr.result;
+    };
+    fr.onerror = rej;
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ========================================================================
+   Markdown  — güvenli alt küme (HTML kaçışlı)
+   ===================================================================== */
+function safeUrl(u, allowData){
+  u = u.trim();
+  if(/^(https?:|mailto:)/i.test(u)) return u;
+  if(allowData && /^data:image\/(png|jpe?g|gif|webp|avif);/i.test(u)) return u;
+  if(/^[^:]+$/.test(u) && !u.startsWith("//")) return u; // relative-ish, no scheme
+  return null;
+}
+function mdInline(src){
+  let s = esc(src);
+  // inline code
+  s = s.replace(/`([^`\n]+)`/g, (_,c)=>`<code>${c}</code>`);
+  // images
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+&quot;[^)]*&quot;)?\)/g, (m,alt,url)=>{
+    const u = safeUrl(url, true); return u? `<img src="${u}" alt="${alt}" loading="lazy">` : esc(m);
+  });
+  // links
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+&quot;[^)]*&quot;)?\)/g, (m,txt,url)=>{
+    const u = safeUrl(url,false); return u? `<a href="${u}" target="_blank" rel="noopener noreferrer">${txt}</a>` : esc(m);
+  });
+  // bold / italic / strike
+  s = s.replace(/\*\*([^*\n]+)\*\*/g,"<strong>$1</strong>").replace(/__([^_\n]+)__/g,"<strong>$1</strong>");
+  s = s.replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g,"$1<em>$2</em>");
+  s = s.replace(/(^|[^_\w])_([^_\n]+)_(?!\w)/g,"$1<em>$2</em>");
+  s = s.replace(/~~([^~\n]+)~~/g,"<del>$1</del>");
+  // bare urls
+  s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, (_,pre,url)=>`${pre}<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+  // #tags (avoid inside code/attrs — code already wrapped, tags won't sit in href because those are urls)
+  s = s.replace(/(^|[\s(>])#([\p{L}_][\p{L}\p{N}_/-]*)/gu,
+    (_,pre,tag)=>`${pre}<span class="in-tag" data-tag="${esc(tag.toLowerCase())}">#${esc(tag)}</span>`);
+  return s;
+}
+function startsBlock(line){
+  return /^ {0,3}(#{1,6}\s|>|```|([-*+]|\d+[.)])\s|([-*_])( *\3){2,}\s*$)/.test(line);
+}
+function splitRow(line){
+  return line.replace(/^\s*\|?/,"").replace(/\|?\s*$/,"").split("|").map(c=>c.trim());
+}
+let _taskSeq = 0;
+function renderMarkdown(src){ _taskSeq = 0; return _renderMd(src); }
+// toplam memo metninde n. görev kutusunu [ ] <-> [x] çevir (renderMarkdown ile aynı sırada sayar)
+function toggleTaskInContent(content, n){
+  let i = -1;
+  return String(content).replace(/^( {0,3}(?:[-*+]|\d+[.)])\s+)\[([ xX])\]/gm, (m,pre,mark)=>{
+    i++; if(i!==n) return m;
+    return pre + (mark.toLowerCase()==="x" ? "[ ]" : "[x]");
+  });
+}
+function _renderMd(src){
+  const lines = String(src||"").replace(/\r\n?/g,"\n").split("\n");
+  const out = []; let i=0;
+  while(i<lines.length){
+    let line = lines[i];
+    if(/^\s*```/.test(line)){
+      const lang = line.trim().slice(3).trim();
+      const buf=[]; i++;
+      while(i<lines.length && !/^\s*```/.test(lines[i])){ buf.push(lines[i]); i++; }
+      i++;
+      out.push(`<pre><code${lang?` class="lang-${esc(lang)}"`:""}>${esc(buf.join("\n"))}</code></pre>`);
+      continue;
+    }
+    if(line.trim()===""){ i++; continue; }
+    if(/^ {0,3}([-*_])( *\1){2,} *$/.test(line)){ out.push("<hr>"); i++; continue; }
+    let m = /^ {0,3}(#{1,6})\s+(.*)$/.exec(line);
+    if(m){ const lv=m[1].length; out.push(`<h${lv}>${mdInline(m[2].replace(/\s+#+\s*$/,""))}</h${lv}>`); i++; continue; }
+    if(/^ {0,3}>/.test(line)){
+      const buf=[];
+      while(i<lines.length && /^ {0,3}>/.test(lines[i])){ buf.push(lines[i].replace(/^ {0,3}>\s?/,"")); i++; }
+      out.push(`<blockquote>${_renderMd(buf.join("\n"))}</blockquote>`);
+      continue;
+    }
+    if(line.includes("|") && i+1<lines.length && /^ {0,3}\|?[\s:|-]+\|?\s*$/.test(lines[i+1]) && lines[i+1].includes("-")){
+      const header = splitRow(line);
+      const aligns = splitRow(lines[i+1]).map(c=>{
+        const l=c.startsWith(":"), r=c.endsWith(":");
+        return l&&r?"center":r?"right":l?"left":"";
+      });
+      i+=2; const rows=[];
+      while(i<lines.length && lines[i].includes("|") && lines[i].trim()!==""){ rows.push(splitRow(lines[i])); i++; }
+      let h = "<table><thead><tr>"+header.map((c,x)=>`<th${aligns[x]?` style="text-align:${aligns[x]}"`:""}>${mdInline(c)}</th>`).join("")+"</tr></thead><tbody>";
+      h += rows.map(r=>"<tr>"+r.map((c,x)=>`<td${aligns[x]?` style="text-align:${aligns[x]}"`:""}>${mdInline(c)}</td>`).join("")+"</tr>").join("");
+      out.push(h+"</tbody></table>");
+      continue;
+    }
+    if(/^ {0,3}([-*+]|\d+[.)])\s+/.test(line)){
+      const ordered = /^ {0,3}\d/.test(line);
+      const items=[];
+      while(i<lines.length && /^ {0,3}([-*+]|\d+[.)])\s+/.test(lines[i])){
+        let it = lines[i].replace(/^ {0,3}([-*+]|\d+[.)])\s+/,""); i++;
+        while(i<lines.length && lines[i].trim()!=="" && /^\s{2,}\S/.test(lines[i]) && !/^ {0,3}([-*+]|\d+[.)])\s+/.test(lines[i])){
+          it += "\n"+lines[i].trim(); i++;
+        }
+        items.push(it);
+      }
+      const li = items.map(it=>{
+        const task = /^\[([ xX])\]\s+/.exec(it);
+        if(task){
+          const checked = task[1].toLowerCase()==="x";
+          const ti = _taskSeq++;
+          return `<li class="task"><input type="checkbox" data-task="${ti}"${checked?" checked":""}> ${mdInline(it.slice(task[0].length)).replace(/\n/g,"<br>")}</li>`;
+        }
+        return `<li>${mdInline(it).replace(/\n/g,"<br>")}</li>`;
+      }).join("");
+      out.push(ordered?`<ol>${li}</ol>`:`<ul>${li}</ul>`);
+      continue;
+    }
+    // paragraph
+    const buf=[line]; i++;
+    while(i<lines.length && lines[i].trim()!=="" && !startsBlock(lines[i])){ buf.push(lines[i]); i++; }
+    out.push(`<p>${mdInline(buf.join("\n")).replace(/\n/g,"<br>")}</p>`);
+  }
+  return out.join("\n");
+}
+function extractTags(text){
+  const set = new Set(); const re = /(^|[\s(])#([\p{L}_][\p{L}\p{N}_/-]*)/gu; let m;
+  while((m=re.exec(text))) set.add(m[2].toLowerCase());
+  return [...set];
+}
+function wordCount(s){ return (String(s||"").trim().match(/\S+/g)||[]).length; }
+
+/* ========================================================================
+   Engagement — günün kıvılcımı · geçen bugün · rozetler · seri kutlaması · paylaşım kartları
+   ===================================================================== */
+const PROMPTS = {
+  tr:["Bugün seni ne şaşırttı?","Şu an neye minnettarsın?","Bu haftadan aklında ne kalacak?",
+    "Kime bir mesaj borçlusun?","Bugün öğrendiğin tek şey neydi?","Şu an neyi erteliyorsun?",
+    "En son ne zaman kahkaha attın?","Gelecek sana bir şey sorsa ne sorardı?","Bugünkü küçük zaferin neydi?",
+    "Kafanı kurcalayan soru ne?","Bir yıl sonra bugünü nasıl hatırlamak isterdin?","Şu an neyi bırakman gerekiyor?",
+    "Bugün kimden ilham aldın?","En son ne zaman fikrini değiştirdin?","Bedenin şu an sana ne söylüyor?",
+    "Bugünü tek cümleyle özetle.","Yarın için tek niyetin ne?","Neyi merak ediyorsun ama araştırmadın?",
+    "Son okuduğun şeyden ne kaldı?","Bugün neye 'hayır' demeliydin?","Şu an neyi fazla düşünüyorsun?",
+    "Bugün fark ettiğin küçük güzellik neydi?","Kendine bir tavsiye verecek olsan?","Bu an bir daha gelmeyecek — not düş."],
+  en:["What surprised you today?","What are you grateful for right now?","What will stay with you from this week?",
+    "Who do you owe a message?","One thing you learned today?","What are you putting off right now?",
+    "When did you last laugh out loud?","If the future asked you something, what would it be?","A small win today?",
+    "What question is nagging you?","How do you want to remember today a year from now?","What do you need to let go of?",
+    "Who inspired you today?","When did you last change your mind?","What is your body telling you right now?",
+    "Sum up today in one sentence.","One intention for tomorrow?","What are you curious about but haven't looked up?",
+    "What stuck with you from the last thing you read?","What should you have said 'no' to today?","What are you overthinking?",
+    "A small beauty you noticed today?","What advice would you give yourself?","This moment won't return — note it."],
+};
+function dayOfYear(d=new Date()){ return Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000); }
+function promptOff(){ try{ return +localStorage.getItem("merlfy.promptOff."+dayKey(Date.now()))||0; }catch{ return 0; } }
+function todaysPrompt(){ const l = PROMPTS[LANG]||PROMPTS.tr; return l[(dayOfYear()+promptOff()) % l.length]; }
+function shufflePrompt(){ try{ localStorage.setItem("merlfy.promptOff."+dayKey(Date.now()), String(promptOff()+1)); }catch{} }
+
+function celebrate(){
+  try{
+    if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+    if(!document.body || !Element.prototype.animate) return;
+    const cols = ["#d3873c","#b06a26","#3d7a4c","#2c6b66","#c99a3f","#ad3a33","#e0b070"];
+    const box = el("div",{style:"position:fixed;inset:0;pointer-events:none;z-index:400;overflow:hidden"});
+    document.body.append(box);
+    for(let i=0;i<90;i++){
+      const s = 6+Math.random()*8, rot = Math.random()*360;
+      const p = el("div",{style:`position:absolute;top:-14px;left:${Math.random()*100}%;width:${s}px;height:${s*.5}px;`
+        +`background:${cols[i%cols.length]};border-radius:2px;transform:rotate(${rot}deg)`});
+      box.append(p);
+      const dur = 1400+Math.random()*1500;
+      p.animate([{transform:`rotate(${rot}deg)`,top:"-14px",opacity:1},
+        {transform:`translateX(${(Math.random()*2-1)*180}px) rotate(${Math.random()*720}deg)`,top:"106vh",opacity:.9}],
+        {duration:dur,easing:"cubic-bezier(.2,.6,.4,1)"});
+      setTimeout(()=>p.remove(), dur);
+    }
+    setTimeout(()=>box.remove(), 3400);
+  }catch{}
+}
+
+function onThisDay(live){
+  const now = new Date(), out = [];
+  const md = d => d.getMonth()*100 + d.getDate();
+  const t0 = new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  for(const m of live){
+    const d = new Date(m.createdAt);
+    const yrs = now.getFullYear() - d.getFullYear();
+    const diff = Math.round((t0 - new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime())/86400000);
+    let label = null;
+    if(yrs>=1 && md(d)===md(now)) label = yrs===1 ? t("onthisday_year") : yrs+" "+t("onthisday_years");
+    else if(diff===7) label = t("onthisday_week");
+    else if(diff===30) label = t("onthisday_month");
+    else if([90,180,365].includes(diff)) label = diff+" "+t("onthisday_days");
+    if(label) out.push({ memo:m, label });
+  }
+  return out.sort((a,b)=>b.memo.createdAt-a.memo.createdAt).slice(0,5);
+}
+
+const BADGES = [
+  { id:"first",   icon:"🌱", test:s=>s.memos>=1 },
+  { id:"streak7", icon:"🔥", test:s=>s.streak>=7 },
+  { id:"streak30",icon:"🏔", test:s=>s.streak>=30 },
+  { id:"century", icon:"💯", test:s=>s.memos>=100 },
+  { id:"night",   icon:"🦉", test:s=>s.night },
+  { id:"early",   icon:"🐦", test:s=>s.early },
+  { id:"tagger",  icon:"🏷", test:s=>s.tags>=10 },
+  { id:"pics",    icon:"🖼", test:s=>s.withImages>=10 },
+  { id:"days30",  icon:"📅", test:s=>s.days>=30 },
+  { id:"words",   icon:"✍️", test:s=>s.words>=5000 },
+];
+function computeStats(live){
+  const days = new Set(), tags = new Set(); let words=0, withImages=0, night=false, early=false, first=Infinity;
+  for(const m of live){
+    days.add(dayKey(m.createdAt));
+    extractTags(m.content).forEach(x=>tags.add(x));
+    words += wordCount(m.content);
+    if(m.images && m.images.length) withImages++;
+    const h = new Date(m.createdAt).getHours();
+    if(h<5) night = true; else if(h<8) early = true;
+    if(m.createdAt<first) first = m.createdAt;
+  }
+  return { memos:live.length, days:days.size, tags:tags.size, words, withImages, night, early,
+    streak: streak(days), first: first===Infinity ? Date.now() : first };
+}
+function earnedBadges(stats){ return BADGES.filter(b=>b.test(stats)); }
+let engagementReady = false;   // ilk hidrasyon geçene kadar kutlama yok
+function checkEngagement(live){
+  const stats = computeStats(live);
+  // rozetler
+  const now = earnedBadges(stats).map(b=>b.id);
+  const bKey = "merlfy.badges."+state.user.id;
+  let seen = []; try{ seen = JSON.parse(localStorage.getItem(bKey)||"[]"); }catch{}
+  const fresh = now.filter(id=>!seen.includes(id));
+  if(now.length!==seen.length){ try{ localStorage.setItem(bKey, JSON.stringify(now)); }catch{} }
+  // seri kilometre taşları
+  const sKey = "merlfy.streakMile."+state.user.id;
+  let last = 0; try{ last = +localStorage.getItem(sKey)||0; }catch{}
+  const reached = STREAK_MILES.filter(m=>m<=stats.streak).pop() || 0;
+  const milestoneHit = reached>last;
+  if(milestoneHit){ try{ localStorage.setItem(sKey, String(reached)); }catch{} }
+
+  if(!engagementReady){ engagementReady = true; return; }
+  if(fresh.length){
+    const b = BADGES.find(x=>x.id===fresh[0]);
+    setTimeout(()=>{ toast(`${b.icon} ${t("badge_new")} — ${t("b_"+b.id)}`); celebrate(); }, 350);
+  } else if(milestoneHit){
+    setTimeout(()=>{ toast(`🔥 ${reached} ${t("streak_milestone_1")} ${t("streak_milestone_2")}`); celebrate(); }, 400);
+  }
+}
+const STREAK_MILES = [3,7,14,30,50,100,200,365];
+
+/* ---- paylaşım kartları (canvas → PNG) ---- */
+function roundRect(x,X,Y,w,h,r){ x.beginPath(); x.moveTo(X+r,Y);
+  x.arcTo(X+w,Y,X+w,Y+h,r); x.arcTo(X+w,Y+h,X,Y+h,r); x.arcTo(X,Y+h,X,Y,r); x.arcTo(X,Y,X+w,Y,r); x.closePath(); }
+function wrapLines(x, text, maxW){
+  const words = String(text).split(/\s+/), lines = []; let line = "";
+  for(const w of words){
+    const test = line ? line+" "+w : w;
+    if(x.measureText(test).width > maxW && line){ lines.push(line); line = w; } else line = test;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+function cardTheme(){
+  const dark = document.documentElement.dataset.theme==="dark"
+    || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme:dark)").matches);
+  return dark
+    ? { bg:"#15191b", card:"#1f272a", ink:"#e9ecec", dim:"#98a3a7", accent:"#d3873c" }
+    : { bg:"#e9e0d2", card:"#fbf9f5", ink:"#20292e", dim:"#6b7a80", accent:"#b06a26" };
+}
+function newCanvas(w,h){ const c = el("canvas"); c.width = w; c.height = h; return c; }
+const HM_COLS = ["#e3e5e6","#e6cfa9","#d5a35f","#b87a2f","#8c5716"];
+
+function drawMemoCard(memo, author){
+  const T=cardTheme(), W=1080, pad=160, lh=66;
+  const tags = extractTags(memo.content||"").slice(0,6);
+  const raw = (memo.content||"")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g,"")
+    .replace(/(^|\s)#[\p{L}\p{N}_/-]+/gu," ")   // etiketleri gövdeden ayır
+    .replace(/[>*_`|#]/g,"").replace(/\s+/g," ").trim() || "…";
+  const mc = newCanvas(4,4).getContext("2d"); mc.font="600 48px Georgia,serif";
+  let lines = wrapLines(mc, raw, W-pad-150);
+  if(lines.length>12){ lines = lines.slice(0,12); lines[11] = lines[11].replace(/\s+\S*$/,"")+" …"; }
+  const top=196, bodyH=lines.length*lh;
+  const tagsY = top + bodyH + 46;
+  const footY = tagsY + (tags.length?54:0) + 46;
+  const H = Math.round(footY + 96);
+  const c=newCanvas(W,H), x=c.getContext("2d");
+  x.textBaseline="alphabetic";
+  x.fillStyle=T.bg; x.fillRect(0,0,W,H);
+  x.fillStyle=T.card; roundRect(x,52,52,W-104,H-104,40); x.fill();
+  x.fillStyle=T.accent; x.fillRect(pad-28,132,7,Math.min(bodyH,150));
+  x.fillStyle=T.ink; x.font="600 48px Georgia,'Times New Roman',serif";
+  lines.forEach((ln,i)=> x.fillText(ln, pad, top + i*lh));
+  if(tags.length){
+    x.fillStyle=T.accent; x.font="500 29px 'IBM Plex Mono',monospace";
+    x.fillText(tags.map(g=>"#"+g).join("   "), pad, tagsY);
+  }
+  x.fillStyle=T.accent; x.font="700 33px Georgia,serif"; x.fillText("🪶 Merlfy", pad, footY);
+  x.fillStyle=T.dim; x.font="400 27px -apple-system,'Segoe UI',sans-serif";
+  x.fillText("@"+(author?.username||state.user.username)+"   ·   "+fmtDate(memo.createdAt), pad, footY+40);
+  return c;
+}
+function drawPromptCard(memo, author){
+  const T=cardTheme(), W=1080, pad=140;
+  const q = memo.promptQ || "";
+  const rawAnswer = (memo.content||"").replace(q,"").replace(/^\s+/,"")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g,"").replace(/(^|\s)#[\p{L}\p{N}_/-]+/gu," ")
+    .replace(/[>*_`|#]/g,"").replace(/\s+/g," ").trim() || "…";
+  const mc = newCanvas(4,4).getContext("2d");
+  mc.font="italic 600 40px Georgia,serif";
+  let qLines = wrapLines(mc, q, W-pad*2);
+  mc.font="500 46px Georgia,serif";
+  let aLines = wrapLines(mc, rawAnswer, W-pad*2);
+  if(aLines.length>10){ aLines = aLines.slice(0,10); aLines[9] = aLines[9].replace(/\s+\S*$/,"")+" …"; }
+  const qLh=54, aLh=62;
+  const qTop=176, qH=qLines.length*qLh;
+  const divY = qTop + qH + 34;
+  const aTop = divY + 50;
+  const footY = aTop + aLines.length*aLh + 60;
+  const H = Math.round(footY + 96);
+  const c=newCanvas(W,H), x=c.getContext("2d");
+  x.textBaseline="alphabetic";
+  x.fillStyle=T.bg; x.fillRect(0,0,W,H);
+  x.fillStyle=T.card; roundRect(x,52,52,W-104,H-104,40); x.fill();
+  x.fillStyle=T.accent; x.font="700 24px 'IBM Plex Mono',monospace";
+  x.fillText("✦ "+t("prompt_label").toUpperCase(), pad, 112);
+  x.fillStyle=T.accent; x.font="italic 600 40px Georgia,serif";
+  qLines.forEach((ln,i)=> x.fillText(ln, pad, qTop + i*qLh));
+  x.strokeStyle=T.dim; x.globalAlpha=.25; x.lineWidth=2;
+  x.beginPath(); x.moveTo(pad, divY); x.lineTo(W-pad, divY); x.stroke(); x.globalAlpha=1;
+  x.fillStyle=T.ink; x.font="500 46px Georgia,'Times New Roman',serif";
+  aLines.forEach((ln,i)=> x.fillText(ln, pad, aTop + i*aLh));
+  x.fillStyle=T.accent; x.font="700 33px Georgia,serif"; x.fillText("🪶 Merlfy", pad, footY);
+  x.fillStyle=T.dim; x.font="400 27px -apple-system,'Segoe UI',sans-serif";
+  x.fillText("@"+(author?.username||state.user.username)+"   ·   "+fmtDate(memo.createdAt), pad, footY+40);
+  return c;
+}
+function drawRecapCard(live, period){
+  const winDays = period==="30" ? 30 : period==="7" ? 7 : 0;
+  if(winDays){ const cut = Date.now() - winDays*86400000; live = live.filter(m=>m.createdAt>=cut); }
+  const s = computeStats(live), W=1080, M=96;
+  const counts={}; live.forEach(m=>extractTags(m.content).forEach(tg=>counts[tg]=(counts[tg]||0)+1));
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const hc={}; live.forEach(m=>{ const k=dayKey(m.createdAt); hc[k]=(hc[k]||0)+1; });
+
+  // ---- layout (canvas boyutu içeriğe göre) ----
+  const gy=228, gw=(W-M*2-30)/2, gh=246;
+  const gridBottom = gy + 2*gh + 28;
+  let tagsLabelY = gridBottom + 78, tagRows = top.length ? Math.ceil(top.length/3) : 0;
+  const hy = (top.length ? tagsLabelY + 30 + tagRows*58 : gridBottom + 60);
+  const WK=26, cell=26, gap=7, hmBottom = hy + 7*(cell+gap-2);
+  const footLineY = hmBottom + 66, footTextY = footLineY + 46;
+  const H = Math.round(footTextY + 44);
+
+  const c=newCanvas(W,H), x=c.getContext("2d"), T=cardTheme();
+  x.textBaseline="alphabetic";
+  x.fillStyle=T.bg; x.fillRect(0,0,W,H);
+
+  x.fillStyle=T.accent; x.font="700 46px 'Bricolage Grotesque',Georgia,serif";
+  x.fillText("🪶 "+t("wrapped_title"), M, 116);
+  x.fillStyle=T.dim; x.font="400 30px -apple-system,'Segoe UI',sans-serif";
+  x.fillText("@"+state.user.username + (winDays ? "   ·   "+(winDays===30?t("recap_30"):t("recap_7")) : ""), M, 162);
+
+  [[s.memos,t("wrapped_memos")],[s.streak,t("wrapped_streak")],[s.days,t("wrapped_days")],[s.words,t("wrapped_words")]]
+    .forEach(([n,lb],i)=>{
+      const cx = M + (i%2)*(gw+30), cy = gy + Math.floor(i/2)*(gh+28);
+      x.fillStyle=T.card; roundRect(x,cx,cy,gw,gh,28); x.fill();
+      x.fillStyle=T.accent; x.font="700 90px 'Bricolage Grotesque',Georgia,serif";
+      x.fillText(String(n), cx+40, cy+136);
+      x.fillStyle=T.dim; x.font="600 24px -apple-system,'Segoe UI',sans-serif";
+      x.fillText(String(lb).toUpperCase(), cx+42, cy+188);
+    });
+
+  if(top.length){
+    x.fillStyle=T.ink; x.font="600 32px -apple-system,'Segoe UI',sans-serif";
+    x.fillText(t("wrapped_toptags"), M, tagsLabelY);
+    x.font="500 35px 'IBM Plex Mono',monospace"; x.fillStyle=T.accent;
+    top.forEach((e,i)=> x.fillText("#"+e[0], M + (i%3)*300, tagsLabelY + 56 + Math.floor(i/3)*58));
+  }
+
+  const today=new Date(); today.setHours(0,0,0,0);
+  const start=new Date(today); start.setDate(start.getDate()-(WK-1)*7-((today.getDay()+6)%7));
+  for(let w=0;w<WK;w++) for(let d=0;d<7;d++){
+    const day=new Date(start); day.setDate(day.getDate()+w*7+d);
+    if(day>today) continue;
+    const n=hc[dayKey(day.getTime())]||0;
+    x.fillStyle = HM_COLS[n===0?0:n<=1?1:n<=3?2:n<=6?3:4];
+    roundRect(x, M + w*(cell+gap), hy + d*(cell+gap-2), cell, cell-4, 5); x.fill();
+  }
+
+  x.strokeStyle=T.dim; x.globalAlpha=.22; x.lineWidth=2;
+  x.beginPath(); x.moveTo(M,footLineY); x.lineTo(W-M,footLineY); x.stroke(); x.globalAlpha=1;
+  x.fillStyle=T.dim; x.font="400 24px -apple-system,'Segoe UI',sans-serif";
+  x.fillText(t("wrapped_since")+" "+fmtDate(s.first), M, footTextY);
+  x.fillStyle=T.accent; x.font="700 29px 'Bricolage Grotesque',serif";
+  const brand="🪶 merlfy"; x.fillText(brand, W-M-x.measureText(brand).width, footTextY);
+  return c;
+}
+function dataUrlToBlob(d){
+  const bin = atob(d.split(",")[1]), arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type:"image/png" });
+}
+function shareCanvas(canvas){
+  const render = blob=>{
+    if(!blob) return;
+    const url = URL.createObjectURL(blob);
+    const shut = ()=>{ ov.remove(); try{ URL.revokeObjectURL(url); }catch{} };
+    const ov = el("div",{class:"overlay",onclick:e=>{ if(e.target===ov) shut(); }});
+    const m = el("div",{class:"modal",style:"max-width:420px"});
+    m.append(el("div",{class:"modal-head"}, el("h2",{text:t("share")}),
+      el("button",{class:"icon-btn","aria-label":"close",text:"✕",onclick:shut})));
+    const foot = el("div",{class:"modal-foot"});
+    const mkFile = ()=> new File([blob],"merlfy-"+dayKey(Date.now())+".png",{type:"image/png"});
+    let canShareFiles = false;
+    try{ canShareFiles = !!(navigator.share && navigator.canShare && navigator.canShare({files:[mkFile()]})); }catch{}
+    if(navigator.clipboard && window.ClipboardItem)
+      foot.append(el("button",{class:"btn",text:t("card_copy"),onclick:async()=>{
+        try{ await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]); toast(t("card_copied")); shut(); }
+        catch{ toast("✕"); }
+      }}));
+    if(canShareFiles)
+      foot.append(el("button",{class:"btn primary",text:t("share"),onclick:async()=>{
+        try{ await navigator.share({files:[mkFile()], title:"Merlfy"}); }catch{}
+      }}));
+    else
+      foot.append(el("button",{class:"btn primary",text:t("card_download"),onclick:()=>{
+        const a = el("a",{href:url, download:mkFile().name}); document.body.append(a); a.click(); a.remove();
+      }}));
+    m.append(el("div",{class:"modal-body"},
+      el("img",{src:url,alt:"",style:"width:100%;border-radius:10px;display:block;box-shadow:var(--shadow)"}),
+      el("p",{class:"hint",style:"margin:10px 0 0",text:t("card_hint")})), foot);
+    ov.append(m); modalRoot.append(ov);
+  };
+  if(typeof canvas.toBlob === "function")
+    canvas.toBlob(b=>{ try{ render(b || dataUrlToBlob(canvas.toDataURL("image/png"))); }catch(e){ console.error(e); } }, "image/png");
+  else render(dataUrlToBlob(canvas.toDataURL("image/png")));
+}
+function shareRecap(){
+  const live = cache.memos.filter(m=>!m.deletedAt);
+  const body = el("div",{style:"display:flex;flex-direction:column;gap:8px"});
+  [["all",t("recap_all")],["30",t("recap_30")],["7",t("recap_7")]].forEach(([p,lb])=>
+    body.append(el("button",{class:"btn",style:"justify-content:center",text:lb,onclick:()=>{
+      ov.remove(); shareCanvas(drawRecapCard(live, p));
+    }})));
+  const ov = modal(t("recap_pick"), body);
+}
+
+/* ========================================================================
+   App state
+   ===================================================================== */
+const state = {
+  user:null, users:[], view:"feed",
+  filter:{ tag:null, q:"", date:null, vis:"all", hasImage:false },
+  page:1, PER:15,
+  composer:{ images:[], preview:false, promptQ:null },
+  allowReg:true,
+};
+const app = $("#app");
+const modalRoot = $("#modal-root");
+function fmtDate(ts){
+  return new Intl.DateTimeFormat(LANG==="tr"?"tr-TR":"en-US",{day:"numeric",month:"short",year:"numeric"}).format(ts);
+}
+function relTime(ts){
+  const s = (Date.now()-ts)/1000;
+  if(s<60) return t("just_now");
+  if(s<3600) return Math.floor(s/60)+" "+t("min_ago");
+  if(s<86400) return Math.floor(s/3600)+" "+t("hr_ago");
+  const d = new Date(ts), now=new Date();
+  const days = Math.floor((new Date(now.getFullYear(),now.getMonth(),now.getDate()) - new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+  if(days===1) return t("yesterday");
+  return fmtDate(ts);
+}
+const dayKey = ts => { const d=new Date(ts); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+
+/* ---------- icons ---------- */
+const ICON = {
+  feed:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  explore:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="m15 9-3.5 1.5L10 14l3.5-1.5L15 9Z"/></svg>',
+  calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.6-2-3.4-2.3 1a7 7 0 0 0-1.7-1l-.3-2.4h-4l-.3 2.4a7 7 0 0 0-1.7 1l-2.3-1-2 3.4 2 1.6a7 7 0 0 0 0 2l-2 1.6 2 3.4 2.3-1a7 7 0 0 0 1.7 1l.3 2.4h4l.3-2.4a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.6c.06-.33.1-.66.1-1Z"/></svg>',
+  break:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8h13v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8Z"/><path d="M17 9h2a2 2 0 0 1 0 4h-2M7 3v2M11 3v2"/></svg>',
+  image:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 16-5-5L5 20"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="14" height="14"><path d="M12 17v5M9 3h6l-1 6 3 3H7l3-3-1-6Z"/></svg>',
+};
+
+/* ========================================================================
+   Auth screens
+   ===================================================================== */
+function initials(name){ return (name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase(); }
+function avatarNode(user, cls=""){
+  if(user && user.avatar) return el("img",{class:"avatar "+cls, src:user.avatar, alt:""});
+  return el("div",{class:"avatar "+cls, text:initials(user?.displayName||user?.username)});
+}
+
+function recentUsernames(){ try{ return JSON.parse(localStorage.getItem("merlfy.recentUsers")||"[]"); }catch{ return []; } }
+function rememberUsername(u){
+  try{ let l=recentUsernames(); l=[u,...l.filter(x=>x.toLowerCase()!==u.toLowerCase())].slice(0,5);
+    localStorage.setItem("merlfy.recentUsers",JSON.stringify(l)); }catch{}
+}
+
+async function renderGate(){
+  app.innerHTML=""; modalRoot.innerHTML="";
+  const card = el("div",{class:"gate-card"});
+  card.append(el("div",{class:"brand"}, el("span",{class:"mark",text:"🪶"}), el("span",{class:"name",text:"Merlfy"})));
+  card.append(el("p",{class:"tag",text:t("tagline")}));
+
+  if(state._gateMode==="register" && state.allowReg){
+    card.append(gateForm({mode:"register"}));
+    card.append(el("div",{class:"switch-line"},
+      el("span"), el("button",{class:"btn ghost sm",text:t("back_to_login"),onclick:()=>{ state._gateMode=null; renderGate(); }})));
+  } else {
+    const recents = recentUsernames();
+    if(recents.length){
+      const chips = el("div",{class:"acct-chips"});
+      recents.forEach(u=> chips.append(el("button",{onclick:()=>{ state._gateUser=u; renderGate(); }},
+        el("div",{class:"avatar",text:initials(u)}), el("span",{text:u}))));
+      card.append(chips);
+    }
+    card.append(gateForm({mode:"login"}));
+    const line = el("div",{class:"switch-line"});
+    line.append(state.allowReg
+      ? el("button",{class:"btn ghost sm",text:t("new_account"),onclick:()=>{ state._gateMode="register"; renderGate(); }})
+      : el("span"));
+    line.append(el("button",{class:"btn ghost sm",text:t("have_demo"),onclick:seedDemo}));
+    card.append(line);
+  }
+  app.append(el("div",{class:"gate"}, card));
+  const f = $("input", card); if(f) f.focus();
+}
+
+function gateForm({mode}){
+  const form = el("form");
+  const err = el("div",{class:"err",style:"display:none"});
+  const uIn = el("input",{class:"input", value: state._gateUser||"", autocomplete:"username", required:true});
+  const dIn = el("input",{class:"input", autocomplete:"name"});
+  const pIn = el("input",{class:"input", type:"password", autocomplete: mode==="login"?"current-password":"new-password", required:true});
+  const p2In = el("input",{class:"input", type:"password", autocomplete:"new-password", required:true});
+
+  form.append(field(t("username"), uIn));
+  if(mode!=="login") form.append(field(t("displayname"), dIn));
+  form.append(field(t("password"), pIn));
+  if(mode!=="login") form.append(field(t("password2"), p2In));
+  form.append(err);
+  const btn = el("button",{class:"btn primary", type:"submit", style:"width:100%;justify-content:center",
+    text: mode==="login"? t("login") : t("create_owner")});
+  form.append(btn);
+
+  form.addEventListener("submit", async e=>{
+    e.preventDefault(); err.style.display="none"; btn.disabled=true;
+    try{
+      const username = uIn.value.trim();
+      if(!username) throw new Error(t("user_required"));
+      if(mode==="login"){
+        try{ await auth.signInWithEmailAndPassword(usernameToEmail(username), pIn.value); }
+        catch(ex){ throw new Error(t("wrong_pass")); }
+        rememberUsername(username);
+      } else {
+        if(pIn.value.length<6) throw new Error(t("pass_short"));
+        if(pIn.value!==p2In.value) throw new Error(t("pass_mismatch"));
+        pendingProfile = { username, displayName: dIn.value.trim() };
+        try{ await auth.createUserWithEmailAndPassword(usernameToEmail(username), pIn.value); }
+        catch(ex){
+          if(ex.code==="auth/email-already-in-use") throw new Error(t("user_taken"));
+          throw new Error(ex.message || t("wrong_pass"));
+        }
+        rememberUsername(username);
+      }
+      // auth.onAuthStateChanged devralır: state.user'ı doldurup renderApp() çağırır
+    }catch(ex){ err.textContent = ex.message; err.style.display="block"; btn.disabled=false; }
+  });
+  return form;
+}
+function field(label, input){
+  const id = "f"+uid(); input.id=id;
+  return el("div",{class:"field"}, el("label",{for:id,text:label}), input);
+}
+
+async function bootPrefs(){
+  state.allowReg = await store.getSetting("allowReg", true);
+}
+
+/* ---------- demo seed ---------- */
+async function seedDemo(){
+  const demoEmail = usernameToEmail("demo"), demoPass = "demo1234";
+  try{
+    await auth.signInWithEmailAndPassword(demoEmail, demoPass);
+  }catch(ex){
+    try{
+      pendingProfile = { username:"demo", displayName: LANG==="tr"?"Demo Kullanıcı":"Demo User" };
+      await auth.createUserWithEmailAndPassword(demoEmail, demoPass);
+    }catch{ toast("✕"); return; }
+  }
+  const u = await ensureUserDoc(auth.currentUser);
+  const existing = await store.memos(u.id);
+  if(existing.length) return;
+  const now = Date.now(), D = 86400000;
+  const samples = LANG==="tr" ? [
+    {d:0.2, v:"public", pin:true, c:"Merlfy'ye ilk memo. Buraya aklıma geleni bırakıyorum — bir düşünce, bir alıntı, bir yapılacak. #merlfy #başlangıç"},
+    {d:0.9, v:"private", c:"Bugün öğrendiğim şey: küçük ve sık notlar, uzun ve nadir notlardan daha çok işe yarıyor.\n\n> \"Kalem, en zayıf hafızadan güçlüdür.\" #not"},
+    {d:1.8, v:"workspace", c:"Hafta planı:\n- [x] Merlfy taslağı\n- [x] Markdown motoru\n- [ ] Telegram köprüsü\n- [ ] yedekleme akışı #plan #hafta"},
+    {d:3.1, v:"private", c:"Kod parçası — gün anahtarı:\n```js\nconst dayKey = ts => new Date(ts).toISOString().slice(0,10);\n```\n#kod #js"},
+    {d:4.4, v:"public", c:"Okuma listesi\n\n| Kitap | Durum |\n|---|---|\n| Deep Work | okunuyor |\n| Bir Şeyi Bitirmek | sırada |\n#okuma"},
+    {d:6.0, v:"private", c:"Sabah yürüyüşü fikir için harika. Bugünkü: notları etikete göre değil, **zamana** göre gözden geçirmek. #fikir"},
+    {d:9.5, v:"workspace", c:"Toplantı notu: sürüm 0.1 kapsamı sabit. Ekstra istekler backlog'a. #iş #karar"},
+    {d:13, v:"private", c:"Alışkanlık takibi 12 gün oldu. Seriyi bozma. #alışkanlık"},
+    {d:20, v:"public", c:"Merlfy neden var? Çünkü bir düşünce yazılmazsa, birkaç saat içinde kayboluyor. #merlfy"},
+    {d:34, v:"private", c:"Eski bir not: \"yıl sonunda buraya dönüp bak.\" İşte döndüm. #geridönüş"},
+  ] : [
+    {d:0.2, v:"public", pin:true, c:"First memo in Merlfy. I drop whatever comes to mind here — a thought, a quote, a to-do. #merlfy #start"},
+    {d:0.9, v:"private", c:"Learned today: small frequent notes beat long rare ones.\n\n> \"The palest ink beats the sharpest memory.\" #note"},
+    {d:1.8, v:"workspace", c:"Week plan:\n- [x] Merlfy draft\n- [x] Markdown engine\n- [ ] Telegram bridge\n- [ ] backup flow #plan #week"},
+    {d:3.1, v:"private", c:"Snippet — day key:\n```js\nconst dayKey = ts => new Date(ts).toISOString().slice(0,10);\n```\n#code #js"},
+    {d:4.4, v:"public", c:"Reading list\n\n| Book | Status |\n|---|---|\n| Deep Work | reading |\n| Getting Things Done | queued |\n#reading"},
+    {d:6.0, v:"private", c:"Morning walks are great for ideas. Today's: review notes by **time**, not by tag. #idea"},
+    {d:9.5, v:"workspace", c:"Meeting note: v0.1 scope is locked. Extra asks go to the backlog. #work #decision"},
+    {d:13, v:"private", c:"Habit streak hit 12 days. Don't break the chain. #habit"},
+    {d:20, v:"public", c:"Why does Merlfy exist? Because an unwritten thought is gone within hours. #merlfy"},
+    {d:34, v:"private", c:"An old note: \"come back and read this at year end.\" Here I am. #throwback"},
+  ];
+  for(const s of samples){
+    const ts = now - s.d*D;
+    await store.saveMemo({ id:uid(), userId:u.id, content:s.c, visibility:s.v, pinned:!!s.pin,
+      createdAt:ts, updatedAt:ts, deletedAt:null, images:[], source:"demo" });
+  }
+}
+
+/* ========================================================================
+   App shell
+   ===================================================================== */
+function navBtn(view, icon, label, count){
+  return el("button",{class: state.view===view?"on":"", onclick:()=>go(view)},
+    el("span",{html:icon}), el("span",{text:label}),
+    count!=null? el("span",{class:"count",text:String(count)}) : null);
+}
+function go(view){
+  state.view = view;
+  state.page = 1;
+  if(view==="explore" && state.filter.vis==="private") state.filter.vis="all";
+  renderApp();
+  window.scrollTo({top:0,behavior:"instant"});
+}
+
+let cache = { memos:[], shared:[], authors:{} };
+let gameTimer = null, chessAiTimer = null, chessOnlineUnsub = null;
+function stopGameTimer(){
+  if(gameTimer){ clearInterval(gameTimer); gameTimer=null; }
+  if(chessAiTimer){ clearTimeout(chessAiTimer); chessAiTimer=null; }
+  if(chessOnlineUnsub){ chessOnlineUnsub(); chessOnlineUnsub=null; }
+}
+async function loadData(){
+  cache.memos = await store.memos(state.user.id);
+  cache.authors[state.user.id] = state.user;
+  if(state.view==="explore"){
+    cache.shared = await store.allSharedMemos();
+    const missing = [...new Set(cache.shared.map(m=>m.userId))].filter(id=>!cache.authors[id]);
+    await Promise.all(missing.map(async id=>{ cache.authors[id] = (await idbGet("users",id)) || {id, username:"?", displayName:"?"}; }));
+  }
+}
+
+async function renderApp(){
+  stopGameTimer();
+  await loadData();
+  app.innerHTML="";
+  const shell = el("div",{class:"shell"});
+
+  /* ----- left rail ----- */
+  const live = cache.memos.filter(m=>!m.deletedAt);
+  const trashCount = cache.memos.filter(m=>m.deletedAt).length;
+  const left = el("aside",{class:"rail rail-left"});
+  left.append(el("div",{class:"side-brand"}, el("span",{class:"mark",text:"🪶"}), el("span",{class:"name",text:"Merlfy"})));
+  const nav = el("nav",{class:"nav"});
+  nav.append(
+    navBtn("feed", ICON.feed, t("nav_feed"), live.length),
+    navBtn("explore", ICON.explore, t("nav_explore")),
+    navBtn("calendar", ICON.calendar, t("nav_calendar")),
+    navBtn("break", ICON.break, t("nav_break")),
+    navBtn("trash", ICON.trash, t("nav_trash"), trashCount||null),
+    navBtn("settings", ICON.settings, t("nav_settings")),
+  );
+  left.append(nav);
+  const who = el("div",{class:"who"});
+  const whoRow = el("button",{class:"who-row", onclick:()=>go("settings")},
+    avatarNode(state.user),
+    el("span",{class:"meta"}, el("b",{text:state.user.displayName}),
+      el("span",{text:"@"+state.user.username+(state.user.role==="owner"?" · "+t("owner"):"")})));
+  who.append(whoRow, el("button",{class:"btn ghost sm", style:"width:100%;justify-content:center;margin-top:6px",
+    text:t("logout"), onclick:logout}));
+  left.append(who);
+  shell.append(left);
+
+  /* ----- center ----- */
+  const main = el("main",{class:"rail"});
+  main.append(mobileTop());
+  if(state.view==="feed") main.append(promptStrip(), composer(), onThisDayStrip(live), filterBar("feed"), feedList(sortMemos(applyFilter(live)), "feed"));
+  else if(state.view==="explore"){
+    const shared = (cache.shared||[]).filter(m=>m.userId!==state.user.id || m.visibility!=="private");
+    main.append(filterBar("explore"), feedList(sortMemos(applyFilter(shared)), "explore"));
+  }
+  else if(state.view==="calendar") main.append(calendarView(live));
+  else if(state.view==="break") main.append(gameView());
+  else if(state.view==="trash") main.append(trashView(cache.memos.filter(m=>m.deletedAt)));
+  else if(state.view==="settings") main.append(settingsView());
+  shell.append(main);
+
+  /* ----- right rail ----- */
+  const right = el("aside",{class:"rail rail-right"});
+  const dupInCalendar = state.view==="calendar";
+  right.append(...[dupInCalendar?null:statsCard(live), onThisDayCard(live), dupInCalendar?null:heatCard(live), badgesCard(live), dupInCalendar?null:tagCard(live)].filter(Boolean));
+  shell.append(right);
+
+  app.append(shell);
+  app.append(tabBar(live.length, trashCount));
+  wireComposer();
+  wireShortcuts();
+  checkEngagement(live);
+}
+
+/* ---------- engagement UI ---------- */
+function promptStrip(){
+  const wrap = el("div",{class:"prompt-strip"});
+  const q = el("span",{class:"pq",text:todaysPrompt()});
+  wrap.append(
+    el("span",{class:"pl",text:"✦ "+t("prompt_label")}), q,
+    el("span",{class:"sp",style:"flex:1"}),
+    el("button",{class:"btn ghost sm",title:t("prompt_shuffle"),text:"↻",onclick:()=>{ shufflePrompt(); q.textContent = todaysPrompt(); }}),
+    el("button",{class:"btn sm",text:t("prompt_use"),onclick:()=>{
+      const ta = $("#comp-ta"); if(!ta) return;
+      state.composer.promptQ = q.textContent;
+      ta.value = (ta.value.trim() ? ta.value.replace(/\s*$/,"")+"\n\n" : "") + q.textContent + "\n";
+      ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length);
+      ta.dispatchEvent(new Event("input"));
+    }}));
+  return wrap;
+}
+function goalPill(live){
+  const wrote = live.some(m=>dayKey(m.createdAt)===dayKey(Date.now()));
+  return el("div",{class:"goal-pill"+(wrote?" on":"")}, wrote ? "✓ "+t("goal_done") : "○ "+t("goal_todo"));
+}
+function onThisDayStrip(live){
+  const items = onThisDay(live);
+  if(!items.length) return el("span",{hidden:true});
+  const { memo, label } = items[0];
+  return el("button",{class:"otd-strip",onclick:()=>{ state.filter.date = dayKey(memo.createdAt); state.page=1; renderApp(); }},
+    el("span",{class:"otd-badge",text:"⏳ "+label}),
+    el("span",{class:"otd-text",text:(memo.content||"").replace(/\s+/g," ").trim().slice(0,90)}));
+}
+function onThisDayCard(live){
+  const items = onThisDay(live);
+  if(!items.length) return null;
+  const card = el("div",{class:"card card-pad"});
+  card.append(el("h3",{text:"⏳ "+t("onthisday_title")}));
+  items.forEach(({memo,label})=>{
+    card.append(el("button",{class:"otd-row",onclick:()=>{ state.filter.date = dayKey(memo.createdAt); state.view="feed"; state.page=1; renderApp(); }},
+      el("span",{class:"otd-when",text:label}),
+      el("span",{class:"otd-snip",text:(memo.content||"").replace(/\s+/g," ").trim().slice(0,64) || "🖼"})));
+  });
+  return card;
+}
+function badgesCard(live){
+  const earned = new Set(earnedBadges(computeStats(live)).map(b=>b.id));
+  const card = el("div",{class:"card card-pad"});
+  card.append(el("h3",{}, "🏅 "+t("badges_title"),
+    el("span",{class:"badge-count",text:` ${earned.size}/${BADGES.length}`})));
+  const grid = el("div",{class:"badge-grid"});
+  BADGES.forEach(b=> grid.append(el("div",{class:"badge-cell"+(earned.has(b.id)?" on":""),
+    title:t("b_"+b.id)+" — "+t("b_"+b.id+"_d")},
+    el("span",{class:"bi",text:b.icon}), el("span",{class:"bl",text:t("b_"+b.id)}))));
+  card.append(grid);
+  return card;
+}
+
+function mobileTop(){
+  return el("div",{class:"mobile-top"},
+    el("span",{class:"mark",text:"🪶",style:"font-size:20px"}),
+    el("span",{class:"name",text:sectionTitle()}),
+    el("span",{class:"sp"}),
+    el("button",{class:"icon-btn",onclick:()=>go("settings"),html:ICON.settings}));
+}
+function sectionTitle(){
+  return {feed:t("nav_feed"),explore:t("nav_explore"),calendar:t("nav_calendar"),break:t("nav_break"),trash:t("nav_trash"),settings:t("nav_settings")}[state.view];
+}
+function tabBar(feedN, trashN){
+  const bar = el("div",{class:"tabbar"});
+  [["feed",ICON.feed,t("nav_feed")],["explore",ICON.explore,t("nav_explore")],
+   ["calendar",ICON.calendar,t("nav_calendar")],["break",ICON.break,t("nav_break")],
+   ["trash",ICON.trash,t("nav_trash")],
+   ["settings",ICON.settings,t("nav_settings")]].forEach(([v,ic,lb])=>{
+    bar.append(el("button",{class:state.view===v?"on":"",onclick:()=>go(v)}, el("span",{html:ic}), el("span",{text:lb})));
+  });
+  return bar;
+}
+
+/* ---------- filtering / sorting ---------- */
+function applyFilter(list){
+  const f = state.filter;
+  return list.filter(m=>{
+    if(f.tag && !extractTags(m.content).includes(f.tag)) return false;
+    if(f.date && dayKey(m.createdAt)!==f.date) return false;
+    if(f.vis!=="all" && m.visibility!==f.vis) return false;
+    if(f.hasImage && !(m.images&&m.images.length)) return false;
+    if(f.q){
+      const q = f.q.toLowerCase();
+      if(!m.content.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+}
+function sortMemos(list){
+  return [...list].sort((a,b)=> (b.pinned?1:0)-(a.pinned?1:0) || b.createdAt-a.createdAt);
+}
+
+/* ---------- composer ---------- */
+function composer(){
+  const draftKey = "merlfy.draft."+state.user.id;
+  let draft=""; try{ draft = localStorage.getItem(draftKey)||""; }catch{}
+  const wrap = el("div",{class:"composer",id:"composer"});
+  const ta = el("textarea",{id:"comp-ta", placeholder:t("compose_ph"), rows:2, "aria-label":t("compose_ph")});
+  ta.value = draft;
+  const prev = el("div",{class:"prose preview",id:"comp-prev",style:"display:none"});
+  const imgs = el("div",{class:"comp-imgs",id:"comp-imgs"});
+  const visSel = el("select",{id:"comp-vis","aria-label":"visibility"},
+    el("option",{value:"private",text:t("vis_private")}),
+    el("option",{value:"workspace",text:t("vis_workspace")}),
+    el("option",{value:"public",text:t("vis_public")}));
+  const fileIn = el("input",{type:"file",accept:"image/*",multiple:true,style:"display:none",id:"comp-file"});
+  const bar = el("div",{class:"comp-bar"},
+    el("button",{class:"icon-btn",id:"comp-img-btn",title:t("add_image"),html:ICON.image,type:"button"}),
+    el("button",{class:"icon-btn",id:"comp-prev-btn",title:t("preview"),html:ICON.eye,type:"button"}),
+    fileIn,
+    el("span",{class:"sp"}),
+    el("span",{class:"comp-count",id:"comp-count"}),
+    el("span",{class:"kbd",text:"⌘/Ctrl + ↵"}),
+    visSel,
+    el("button",{class:"btn primary",id:"comp-save",text:t("save"),type:"button"}));
+  wrap.append(ta, prev, imgs, bar);
+  return wrap;
+}
+function renderCompImgs(){
+  const box = $("#comp-imgs"); if(!box) return;
+  box.innerHTML="";
+  state.composer.images.forEach((src,i)=>{
+    box.append(el("figure",{}, el("img",{src,alt:""}),
+      el("button",{type:"button","aria-label":"remove",text:"×",onclick:()=>{ state.composer.images.splice(i,1); renderCompImgs(); }})));
+  });
+}
+function wireComposer(){
+  const ta = $("#comp-ta"); if(!ta) return;
+  const draftKey = "merlfy.draft."+state.user.id;
+  const grow = ()=>{ ta.style.height="auto"; ta.style.height=Math.min(ta.scrollHeight,420)+"px"; };
+  const countEl = $("#comp-count");
+  const updateCount = ()=>{
+    if(!countEl) return;
+    const v = ta.value;
+    countEl.textContent = v.trim() ? `${wordCount(v)} ${t("wc_word")} · ${v.length} ${t("wc_char")}` : "";
+  };
+  grow();
+  updateCount();
+  renderCompImgs();
+  ta.addEventListener("input", ()=>{ grow(); updateCount(); try{ localStorage.setItem(draftKey, ta.value); }catch{}
+    if(state.composer.preview) refreshPreview(); });
+  ta.addEventListener("keydown", e=>{
+    if((e.metaKey||e.ctrlKey) && e.key==="Enter"){ e.preventDefault(); doSave(); }
+  });
+  ta.addEventListener("paste", async e=>{
+    const files = [...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith("image/"));
+    if(files.length){ e.preventDefault(); await addImages(files); }
+  });
+  const wrap = $("#composer");
+  ["dragover","dragenter"].forEach(ev=>wrap.addEventListener(ev,e=>{ e.preventDefault(); wrap.style.borderColor="var(--accent)"; }));
+  ["dragleave","drop"].forEach(ev=>wrap.addEventListener(ev,e=>{ e.preventDefault(); wrap.style.borderColor=""; }));
+  wrap.addEventListener("drop", async e=>{
+    const files = [...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith("image/"));
+    if(files.length) await addImages(files);
+  });
+  $("#comp-file").addEventListener("change", async e=>{ await addImages([...e.target.files]); e.target.value=""; });
+  $("#comp-img-btn").addEventListener("click", ()=>$("#comp-file").click());
+  $("#comp-prev-btn").addEventListener("click", function(){
+    state.composer.preview = !state.composer.preview;
+    this.classList.toggle("on", state.composer.preview);
+    $("#comp-prev").style.display = state.composer.preview? "block":"none";
+    $("#comp-ta").style.display = state.composer.preview? "none":"block";
+    if(state.composer.preview) refreshPreview();
+  });
+  $("#comp-save").addEventListener("click", doSave);
+
+  async function addImages(files){
+    for(const f of files.slice(0,8)){
+      try{ state.composer.images.push(await fileToImage(f)); }catch{}
+    }
+    renderCompImgs();
+  }
+  function refreshPreview(){
+    const p = $("#comp-prev");
+    p.innerHTML = renderMarkdown($("#comp-ta").value) || `<p style="color:var(--text-faint)">${esc(t("preview"))}…</p>`;
+    $$('input[type="checkbox"][data-task]', p).forEach(cb=>cb.disabled=true);
+  }
+  async function doSave(){
+    const content = $("#comp-ta").value.trim();
+    if(!content && !state.composer.images.length) return;
+    const btn = $("#comp-save"); btn.disabled=true; btn.textContent=t("saving");
+    const now = Date.now();
+    const imgIds = [];
+    for(const src of state.composer.images){
+      const r = { id:uid(), userId:state.user.id, dataUrl:src, createdAt:now };
+      await idbPut("resources", r); imgIds.push(r.id);
+    }
+    const promptQ = (state.composer.promptQ && content.includes(state.composer.promptQ)) ? state.composer.promptQ : null;
+    await store.saveMemo({ id:uid(), userId:state.user.id, content, visibility:$("#comp-vis").value,
+      pinned:false, createdAt:now, updatedAt:now, deletedAt:null, images:imgIds, source:"web", promptQ });
+    state.composer.images=[]; state.composer.preview=false; state.composer.promptQ=null;
+    try{ localStorage.removeItem(draftKey); }catch{}
+    state.filter.q=""; state.filter.tag=null; state.filter.date=null;
+    await renderApp();
+  }
+}
+
+/* ---------- filter bar ---------- */
+function filterBar(kind){
+  const f = state.filter;
+  const bar = el("div",{class:"filterbar"});
+  const sw = el("div",{class:"search-wrap"},
+    el("span",{html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'}),
+    el("input",{id:"search-in", type:"search", placeholder:t("search_ph"), value:f.q}));
+  bar.append(sw);
+  sw.querySelector("input").addEventListener("input", debounce(e=>{ state.filter.q=e.target.value; softRefreshFeed(kind); },200));
+
+  const visSeg = el("div",{class:"seg"});
+  const visOpts = [["all",LANG==="tr"?"Hepsi":"All"]];
+  if(kind!=="explore") visOpts.push(["private",t("vis_private")]);
+  visOpts.push(["workspace",t("vis_workspace")],["public",t("vis_public")]);
+  visOpts.forEach(([v,lb])=> visSeg.append(el("button",{class:f.vis===v?"on":"",text:lb,onclick:()=>{ state.filter.vis=v; renderApp(); }})));
+  bar.append(visSeg);
+
+  bar.append(el("button",{class:"tag-chip"+(f.hasImage?" on":""), title:t("filter_has_image"),
+    "aria-pressed":String(!!f.hasImage), text:"🖼",
+    onclick:()=>{ state.filter.hasImage=!state.filter.hasImage; renderApp(); }}));
+
+  if(f.tag) bar.append(el("span",{class:"active"}, "#"+f.tag, el("button",{text:"×","aria-label":"clear tag",onclick:()=>{ state.filter.tag=null; renderApp(); }})));
+  if(f.date) bar.append(el("span",{class:"active"}, f.date, el("button",{text:"×","aria-label":"clear date",onclick:()=>{ state.filter.date=null; renderApp(); }})));
+  return bar;
+}
+function softRefreshFeed(kind){
+  const live = cache.memos.filter(m=>!m.deletedAt);
+  let list;
+  if(kind==="explore"){
+    const shared = (cache.shared||[]).filter(m=>m.userId!==state.user.id || m.visibility!=="private");
+    list = sortMemos(applyFilter(shared));
+  } else list = sortMemos(applyFilter(live));
+  const old = $("#feed-list"); if(old) old.replaceWith(feedList(list, kind));
+}
+function debounce(fn,ms){ let h; return (...a)=>{ clearTimeout(h); h=setTimeout(()=>fn(...a),ms); }; }
+
+/* ---------- feed ---------- */
+function feedList(list, kind){
+  const box = el("div",{class:"feed",id:"feed-list"});
+  if(!list.length){
+    const key = state.filter.q||state.filter.tag||state.filter.date||state.filter.hasImage||state.filter.vis!=="all"
+      ? ["empty_filter_t","empty_filter_p"]
+      : kind==="explore" ? ["empty_explore_t","empty_explore_p"] : ["empty_feed_t","empty_feed_p"];
+    box.append(el("div",{class:"empty"}, el("div",{class:"big",text:"🪶"}),
+      el("p",{style:"font-weight:600;color:var(--text)",text:t(key[0])}), el("p",{text:t(key[1])})));
+    return box;
+  }
+  const shown = list.slice(0, state.page*state.PER);
+  shown.forEach(m=> box.append(memoCard(m, kind)));
+  if(list.length>shown.length){
+    box.append(el("button",{class:"btn load-more",text:t("load_more")+` (${list.length-shown.length})`,
+      onclick:()=>{ state.page++; softRefreshFeed(kind); }}));
+  }
+  return box;
+}
+
+function memoCard(m, kind){
+  const author = cache.authors[m.userId];
+  const mine = m.userId===state.user.id;
+  const card = el("article",{class:"memo"+(m.pinned?" pinned":""), dataset:{id:m.id}});
+
+  const head = el("div",{class:"memo-head"});
+  if(kind==="explore" && author) head.append(avatarNode(author), el("span",{class:"who-name",text:author.displayName}));
+  head.append(el("time",{datetime:new Date(m.createdAt).toISOString(), title:new Date(m.createdAt).toLocaleString(), text:relTime(m.createdAt)}));
+  if(m.updatedAt-m.createdAt>60000) head.append(el("span",{text:"· "+t("edited")}));
+  if(m.pinned) head.append(el("span",{class:"pin-flag",html:ICON.pin, title:t("pinned")}));
+  if(m.source==="telegram") head.append(el("span",{class:"vis",text:"✈ "+t("from_telegram")}));
+  head.append(el("span",{text:visLabel(m.visibility), class:"vis"}));
+  head.append(el("span",{class:"sp"}));
+  if(mine) head.append(memoMenu(m));
+  card.append(head);
+
+  const body = el("div",{class:"prose", html: renderMarkdown(m.content)});
+  body.addEventListener("click", e=>{
+    const tg = e.target.closest(".in-tag");
+    if(tg){ state.filter.tag = tg.dataset.tag; state.view = kind==="explore"?"explore":"feed"; state.page=1; renderApp(); }
+  });
+  if(mine){
+    body.addEventListener("change", async e=>{
+      const cb = e.target.closest('input[type="checkbox"][data-task]');
+      if(!cb) return;
+      m.content = toggleTaskInContent(m.content, +cb.dataset.task);
+      await store.saveMemo(m);
+      body.innerHTML = renderMarkdown(m.content);
+    });
+  } else {
+    $$('input[type="checkbox"][data-task]', body).forEach(cb=>cb.disabled=true);
+  }
+  card.append(body);
+
+  if(m.images && m.images.length) card.append(imageGrid(m.images));
+  return card;
+}
+function visLabel(v){ return v==="public"?t("vis_public"):v==="workspace"?t("vis_workspace"):t("vis_private"); }
+
+function imageGrid(ids){
+  const grid = el("div",{class:"memo-imgs"+(ids.length===1?" single":"")});
+  ids.forEach(id=>{
+    const img = el("img",{alt:"", loading:"lazy"});
+    store.resource(id).then(r=>{ if(r) img.src = r.dataUrl; });
+    img.addEventListener("click", ()=> img.src && openLightbox(img.src));
+    grid.append(img);
+  });
+  return grid;
+}
+function openLightbox(src){
+  const close = e=>{ if(!e || e.key==="Escape"){ lb.remove(); document.removeEventListener("keydown",close); } };
+  const lb = el("div",{class:"lightbox", onclick:()=>close()}, el("img",{src,alt:""}));
+  document.addEventListener("keydown", close);
+  modalRoot.append(lb);
+}
+
+function memoMenu(m){
+  const wrap = el("div",{class:"memo-menu"});
+  const btn = el("button",{"aria-label":"menu", html:ICON.dots});
+  wrap.append(btn);
+  btn.addEventListener("click", e=>{
+    e.stopPropagation();
+    $$(".menu-pop").forEach(x=>x.remove());
+    const pop = el("div",{class:"menu-pop"});
+    pop.append(...[
+      mItem(t("edit"), ()=>startEdit(m)),
+      mItem(m.pinned?t("unpin"):t("pin"), async()=>{ m.pinned=!m.pinned; await store.saveMemo(m); renderApp(); }),
+      mItem(t("copy_text"), ()=>{ navigator.clipboard?.writeText(m.content); toast(t("copied")); }),
+      mItem("🖼 "+t("card_share"), ()=>{ shareCanvas(drawMemoCard(m, cache.authors[m.userId])); }),
+      m.promptQ ? mItem("✦ "+t("card_prompt_share"), ()=>{ shareCanvas(drawPromptCard(m, cache.authors[m.userId])); }) : null,
+      el("hr"),
+      mItem(t("delete"), async()=>{ m.deletedAt=Date.now(); await store.saveMemo(m); renderApp(); }, true),
+    ].filter(Boolean));
+    wrap.append(pop);
+    const off = ev=>{ if(!wrap.contains(ev.target)){ pop.remove(); document.removeEventListener("click",off); } };
+    setTimeout(()=>document.addEventListener("click",off),0);
+  });
+  return wrap;
+}
+function mItem(label, fn, danger){ return el("button",{class:danger?"danger":"",text:label,onclick:fn}); }
+
+function startEdit(m){
+  const card = $(`.memo[data-id="${m.id}"]`); if(!card) return;
+  const body = card.querySelector(".prose");
+  const wrap = el("div",{class:"memo-edit"});
+  const ta = el("textarea",{}); ta.value = m.content;
+  const row = el("div",{class:"row"},
+    el("button",{class:"btn sm",text:t("cancel"),onclick:()=>renderApp()}),
+    el("button",{class:"btn primary sm",text:t("save"),onclick:async()=>{
+      m.content = ta.value.trim(); m.updatedAt = Date.now(); await store.saveMemo(m); renderApp();
+    }}));
+  wrap.append(ta,row);
+  body.replaceWith(wrap);
+  ta.style.height=Math.max(90,ta.scrollHeight)+"px"; ta.focus();
+  ta.addEventListener("keydown",e=>{ if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){ e.preventDefault(); row.lastChild.click(); } });
+}
+
+/* ---------- stats / heatmap / tags ---------- */
+function statsCard(live){
+  const days = new Set(live.map(m=>dayKey(m.createdAt)));
+  const tags = new Set(); live.forEach(m=>extractTags(m.content).forEach(x=>tags.add(x)));
+  const card = el("div",{class:"card card-pad"});
+  card.append(el("h3",{text:t("stats_title")}));
+  card.append(el("div",{class:"stat-row"},
+    stat(live.length, t("stat_memos")),
+    stat(days.size, t("stat_days")),
+    stat(tags.size, t("stat_tags")),
+    stat(streak(days), t("stat_streak"), true)));
+  card.append(goalPill(live));
+  if(live.length){
+    card.append(el("button",{class:"btn sm",style:"width:100%;justify-content:center;margin-top:10px",
+      text:"📤 "+t("wrapped_btn"),onclick:shareRecap}));
+    card.append(el("button",{class:"btn ghost sm",style:"width:100%;justify-content:center;margin-top:6px",
+      text:"🎲 "+t("surprise_btn"),onclick:surpriseMemo}));
+  }
+  return card;
+}
+function surpriseMemo(){
+  const live = cache.memos.filter(m=>!m.deletedAt);
+  if(!live.length){ toast(t("surprise_none")); return; }
+  const m = live[Math.floor(Math.random()*live.length)];
+  const body = el("div",{},
+    el("div",{class:"hint",style:"margin:0 0 10px",text:fmtDate(m.createdAt)}),
+    el("div",{class:"prose",html:renderMarkdown(m.content)}),
+    (m.images&&m.images.length)? imageGrid(m.images) : null);
+  const ov = modal("🎲 "+t("surprise_title"), body, [
+    el("button",{class:"btn",text:t("surprise_again"),onclick:()=>{ ov.remove(); surpriseMemo(); }}),
+    el("button",{class:"btn primary",text:"✕",onclick:()=>ov.remove()}),
+  ]);
+}
+function stat(n,label,isStreak){
+  return el("div",{class:"stat"+(isStreak?" streak":"")}, el("b",{text:String(n)}), el("span",{text:label}));
+}
+function streak(daySet){
+  let n=0; const d=new Date();
+  if(!daySet.has(dayKey(d.getTime()))) d.setDate(d.getDate()-1);
+  while(daySet.has(dayKey(d.getTime()))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function heatCard(live){
+  const counts = {};
+  live.forEach(m=>{ const k=dayKey(m.createdAt); counts[k]=(counts[k]||0)+1; });
+  const card = el("div",{class:"card card-pad"});
+  card.append(el("h3",{text:t("activity_title")}));
+  const WEEKS=27, CELL=11, GAP=3, TOP=14, LEFT=16;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(today); start.setDate(start.getDate() - (WEEKS-1)*7 - ((today.getDay()+6)%7));
+  const W = LEFT + WEEKS*(CELL+GAP), H = TOP + 7*(CELL+GAP);
+  const NS="http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`); svg.setAttribute("width","100%"); svg.setAttribute("role","img");
+  svg.setAttribute("aria-label",t("activity_title"));
+  const color = c=> c===0?"var(--hm0)":c<=1?"var(--hm1)":c<=3?"var(--hm2)":c<=6?"var(--hm3)":"var(--hm4)";
+  let lastMonth=-1;
+  for(let w=0; w<WEEKS; w++){
+    for(let d=0; d<7; d++){
+      const day = new Date(start); day.setDate(day.getDate()+w*7+d);
+      if(day>today) continue;
+      const k = dayKey(day.getTime()); const c = counts[k]||0;
+      const rect = document.createElementNS(NS,"rect");
+      rect.setAttribute("x", LEFT+w*(CELL+GAP)); rect.setAttribute("y", TOP+d*(CELL+GAP));
+      rect.setAttribute("width",CELL); rect.setAttribute("height",CELL); rect.setAttribute("rx",2);
+      rect.setAttribute("fill", color(c)); rect.setAttribute("class","cell");
+      rect.style.cursor="pointer";
+      rect.addEventListener("click",()=>{ state.filter.date=k; state.view="feed"; state.page=1; renderApp(); });
+      const ti = document.createElementNS(NS,"title"); ti.textContent = `${k} · ${c}`;
+      rect.append(ti); svg.append(rect);
+      if(d===0){
+        const mo = day.getMonth();
+        if(mo!==lastMonth){ lastMonth=mo;
+          const tx = document.createElementNS(NS,"text");
+          tx.setAttribute("x", LEFT+w*(CELL+GAP)); tx.setAttribute("y", 9); tx.setAttribute("class","lbl");
+          tx.textContent = new Intl.DateTimeFormat(LANG==="tr"?"tr-TR":"en-US",{month:"short"}).format(day);
+          svg.append(tx);
+        }
+      }
+    }
+  }
+  card.append(el("div",{class:"heat"}, svg));
+  card.append(el("div",{class:"heat-legend"},
+    el("span",{text:t("heat_less")}),
+    ...["var(--hm0)","var(--hm1)","var(--hm2)","var(--hm3)","var(--hm4)"].map(c=>el("i",{style:`background:${c}`})),
+    el("span",{text:t("heat_more")})));
+  return card;
+}
+function tagCard(live){
+  const counts={}; live.forEach(m=>extractTags(m.content).forEach(x=>counts[x]=(counts[x]||0)+1));
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,40);
+  const card = el("div",{class:"card card-pad"});
+  card.append(el("h3",{text:t("tags_title")}));
+  if(!entries.length){ card.append(el("p",{class:"hint",text:t("no_tags")})); return card; }
+  const box = el("div",{class:"tags"});
+  entries.forEach(([tag,n])=> box.append(el("button",{class:"tag-chip"+(state.filter.tag===tag?" on":""),
+    onclick:()=>{ state.filter.tag = state.filter.tag===tag?null:tag; if(state.view!=="explore")state.view="feed"; state.page=1; renderApp(); }},
+    el("span",{text:"#"+tag}), el("span",{class:"n",text:n}))));
+  card.append(box);
+  return card;
+}
+
+/* ---------- calendar view ---------- */
+function calendarView(live){
+  const wrap = el("div",{});
+  wrap.append(statsCard(live), el("div",{style:"height:14px"}), heatCard(live), el("div",{style:"height:14px"}), tagCard(live));
+  if(state.filter.date){
+    wrap.append(el("div",{style:"height:14px"}));
+    wrap.append(filterBar("feed"));
+    wrap.append(feedList(sortMemos(applyFilter(live)),"feed"));
+  }
+  return wrap;
+}
+
+/* ---------- mola / mini oyunlar ---------- */
+function gameView(){
+  state.game = state.game || { tab:"memory" };
+  const wrap = el("div",{});
+  wrap.append(el("p",{class:"hint",style:"margin:0 0 12px",text:t("break_intro")}));
+
+  const nameIn = el("input",{value:playerName(), maxlength:40, "aria-label":t("player_name")});
+  nameIn.addEventListener("input",()=>setPlayerName(nameIn.value.trim()));
+  wrap.append(el("div",{class:"name-field"},
+    el("label",{text:t("player_name")}), nameIn));
+
+  const seg = el("div",{class:"seg",style:"margin-bottom:14px"});
+  [["memory",t("game_memory")],["math",t("game_math")],["chess",t("game_chess")]].forEach(([v,lb])=>
+    seg.append(el("button",{class:state.game.tab===v?"on":"",text:lb,onclick:()=>{ state.game.tab=v; renderApp(); }})));
+  wrap.append(seg);
+
+  wrap.append(state.game.tab==="math" ? mathGame()
+    : state.game.tab==="chess" ? chessGame()
+    : memoryGame());
+  return wrap;
+}
+
+function fmtClock(s){ return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function fmtShortDate(ts){
+  return new Intl.DateTimeFormat(LANG==="tr"?"tr-TR":"en-US",{day:"2-digit",month:"2-digit",year:"2-digit"}).format(ts);
+}
+function playerName(){
+  let n=""; try{ n = localStorage.getItem("merlfy.playerName."+state.user.id)||""; }catch{}
+  return (n || state.user.displayName || state.user.username || t("sb_player")).slice(0,40);
+}
+function setPlayerName(v){ try{ localStorage.setItem("merlfy.playerName."+state.user.id, v); }catch{} }
+
+/* ---------- her oyun için ayrı skor tablosu (IndexedDB) ---------- */
+function scoreboardEl(game, extraCols){
+  const box = el("div",{class:"sb"});
+  const topEl = el("span",{class:"top"});
+  const body = el("div",{});
+  box.append(el("h4",{}, el("span",{text:t("sb_title")}), topEl), body);
+  async function load(){
+    let list=[]; try{ list = await scoreStore.list(game); }catch{}
+    body.innerHTML="";
+    if(!list.length){
+      topEl.textContent="";
+      body.append(el("div",{class:"sb-empty",text:t("sb_empty")}));
+      return;
+    }
+    topEl.textContent = `${t("sb_top")}: ${list[0].score} — ${list[0].player}`;
+    const cols = [
+      {label:"#", num:true, get:(r,i)=>String(i+1)},
+      {label:t("sb_player"), get:r=>r.player},
+      ...(extraCols||[]),
+      {label:t("sb_points"), num:true, cls:"pts", get:r=>String(r.score)},
+      {label:t("sb_date"), num:true, get:r=>fmtShortDate(r.date)},
+    ];
+    const table = el("table",{class:"sb-table"});
+    const thead = el("tr",{});
+    cols.forEach(c=>thead.append(el("th",{text:c.label})));
+    table.append(thead);
+    list.slice(0,12).forEach((r,i)=>{
+      const tr = el("tr",{class: r.userId===state.user.id ? "me" : ""});
+      cols.forEach(c=>{
+        const v = c.get(r,i);
+        tr.append(el("td",{class:(c.num?"num ":"")+(c.cls||"")}, v && v.nodeType ? v : String(v)));
+      });
+      table.append(tr);
+    });
+    body.append(el("div",{class:"sb-wrap"}, table));
+    body.append(el("button",{class:"btn ghost sm sb-clear",text:t("sb_clear"),onclick:async()=>{
+      if(!confirm(t("sb_title")+" — "+t("sb_clear_q"))) return;
+      await scoreStore.clear(game); load();
+    }}));
+  }
+  load();
+  box.reload = load;
+  return box;
+}
+function resBadge(result){
+  const map = { win:["win",t("chess_wins")], loss:["loss",LANG==="tr"?"kaybetti":"lost"], draw:["draw",t("chess_draw")] };
+  const [cls,label] = map[result] || ["draw",result];
+  return el("span",{class:"res-badge "+cls, text:label});
+}
+
+function memoryGame(){
+  const POOL = ["🪶","📎","✒️","📌","🔖","📖"];   // 6 çift → 12 kart
+  let deck=[], flipped=[], moves=0, matched=0, startT=null, done=false;
+  const card = el("div",{class:"card card-pad game-card"});
+  const movesEl = el("b",{text:"0"});
+  const timeEl  = el("b",{text:"0:00"});
+  const status  = el("div",{class:"game-status"});
+  const grid    = el("div",{class:"mem-grid"});
+  const sb = scoreboardEl("memory", [
+    {label:t("game_moves"), num:true, get:r=>String(r.meta.moves ?? "–")},
+    {label:t("game_time"), num:true, get:r=>r.meta.time!=null ? fmtClock(r.meta.time) : "–"},
+  ]);
+  const head = el("div",{class:"game-head"},
+    el("div",{class:"game-stat"}, movesEl, el("span",{text:t("game_moves")})),
+    el("div",{class:"game-stat"}, timeEl, el("span",{text:t("game_time")})),
+    el("span",{class:"sp"}),
+    el("button",{class:"btn sm",text:t("game_new"),onclick:reset}));
+  card.append(head, grid, status);
+
+  function tick(){ if(startT) timeEl.textContent = fmtClock(Math.floor((Date.now()-startT)/1000)); }
+  function draw(){
+    grid.innerHTML="";
+    deck.forEach((c,idx)=>{
+      const open = c.matched || flipped.includes(idx);
+      const b = el("button",{class:"mem-card"+(open?" open":"")+(c.matched?" matched":""),
+        "aria-label":open?c.s:t("card_face_down"), text: open? c.s : ""});
+      b.disabled = done || c.matched || flipped.includes(idx) || flipped.length===2;
+      b.addEventListener("click",()=>flip(idx));
+      grid.append(b);
+    });
+  }
+  function flip(idx){
+    if(done || flipped.includes(idx) || deck[idx].matched || flipped.length>=2) return;
+    if(!startT){ startT=Date.now(); stopGameTimer(); gameTimer=setInterval(tick,500); }
+    flipped.push(idx); draw();
+    if(flipped.length===2){
+      moves++; movesEl.textContent=String(moves);
+      const [a,b]=flipped;
+      if(deck[a].s===deck[b].s){
+        deck[a].matched=deck[b].matched=true; matched++; flipped=[]; draw();
+        if(matched===POOL.length) win();
+      } else {
+        setTimeout(()=>{ if(!grid.isConnected) return; flipped=[]; draw(); }, 720);
+      }
+    }
+  }
+  async function win(){
+    done=true; stopGameTimer();
+    const time=Math.floor((Date.now()-startT)/1000);
+    const score = Math.max(10, 1000 - moves*12 - time*3);
+    status.textContent = `${t("game_won")} ${moves} ${t("game_moves")} · ${fmtClock(time)} · ${score} ${t("game_score")}`;
+    const prevBest = await scoreStore.best("memory");
+    await scoreStore.add("memory", { player:playerName(), score, meta:{ moves, time } });
+    if(!prevBest || score>prevBest.score) status.innerHTML += ` <span class="rec">${t("game_record")}</span>`;
+    sb.reload();
+  }
+  function reset(){
+    stopGameTimer();
+    deck = [...POOL,...POOL].map(s=>({s,matched:false})).sort(()=>Math.random()-0.5);
+    flipped=[]; moves=0; matched=0; startT=null; done=false;
+    movesEl.textContent="0"; timeEl.textContent="0:00"; status.textContent="";
+    draw();
+  }
+  reset();
+  return el("div",{}, card, sb);
+}
+
+function mathGame(){
+  const DURATION = 30;
+  let score=0, streak=0, left=DURATION, running=false, answer=0;
+  const card = el("div",{class:"card card-pad game-card"});
+  const scoreEl=el("b",{text:"0"}), streakEl=el("b",{text:"0"}), leftEl=el("b",{text:String(DURATION)});
+  const qEl = el("div",{class:"math-q",text:t("game_math_hint")});
+  const inp = el("input",{class:"input math-in",type:"text",inputmode:"numeric",autocomplete:"off",disabled:true,"aria-label":"cevap"});
+  const status = el("div",{class:"game-status"});
+  const startBtn = el("button",{class:"btn primary sm",text:t("game_start")});
+  const sb = scoreboardEl("math");
+  card.append(
+    el("div",{class:"game-head"},
+      el("div",{class:"game-stat"}, scoreEl, el("span",{text:t("game_score")})),
+      el("div",{class:"game-stat"}, streakEl, el("span",{text:t("game_streak")})),
+      el("div",{class:"game-stat"}, leftEl, el("span",{text:t("game_left")})),
+      el("span",{class:"sp"}), startBtn),
+    qEl, inp, status);
+
+  function newQ(){
+    const ops=["+","−","×"], op=ops[Math.floor(Math.random()*3)];
+    let a,b;
+    if(op==="×"){ a=2+((Math.random()*11)|0); b=2+((Math.random()*11)|0); answer=a*b; }
+    else if(op==="+"){ a=2+((Math.random()*49)|0); b=2+((Math.random()*49)|0); answer=a+b; }
+    else { a=11+((Math.random()*40)|0); b=1+((Math.random()*(a-1))|0); answer=a-b; }
+    qEl.textContent = `${a} ${op} ${b}`;
+    inp.value=""; inp.focus();
+  }
+  function start(){
+    if(running) return;
+    running=true; score=0; streak=0; left=DURATION;
+    scoreEl.textContent="0"; streakEl.textContent="0"; leftEl.textContent=String(left);
+    status.textContent=""; inp.disabled=false; startBtn.disabled=true; startBtn.textContent="…";
+    newQ();
+    stopGameTimer();
+    gameTimer=setInterval(()=>{ left--; leftEl.textContent=String(Math.max(0,left)); if(left<=0) end(); },1000);
+  }
+  async function end(){
+    running=false; stopGameTimer();
+    inp.disabled=true; startBtn.disabled=false; startBtn.textContent=t("game_restart");
+    qEl.textContent=t("game_math_hint");
+    status.textContent = `${t("game_over")} — ${score} ${t("game_score")}`;
+    const prevBest = await scoreStore.best("math");
+    await scoreStore.add("math", { player:playerName(), score, meta:{} });
+    if(!prevBest || score>prevBest.score) status.innerHTML += ` <span class="rec">${t("game_record")}</span>`;
+    sb.reload();
+  }
+  function submit(){
+    if(!running || inp.value.trim()==="") return;
+    if(Number(inp.value)===answer){
+      score++; streak++; scoreEl.textContent=String(score); streakEl.textContent=String(streak); newQ();
+    } else {
+      streak=0; streakEl.textContent="0"; inp.value=""; inp.focus();
+      card.classList.add("flash-bad"); setTimeout(()=>card.classList.remove("flash-bad"),220);
+    }
+  }
+  inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); submit(); }});
+  startBtn.addEventListener("click",start);
+  return el("div",{}, card, sb);
+}
+
+/* ======================= SATRANÇ ======================= */
+// beyaz = içi boş glifler, siyah = dolu glifler — renk ters çevrilse bile ayırt edilir
+const CHESS_GLYPH_W = { p:"♙", n:"♘", b:"♗", r:"♖", q:"♕", k:"♔" };
+const CHESS_GLYPH_B = { p:"♟", n:"♞", b:"♝", r:"♜", q:"♛", k:"♚" };
+const chessGlyph = (type,color)=> (color==="w"?CHESS_GLYPH_W:CHESS_GLYPH_B)[type];
+const CHESS_GLYPH = CHESS_GLYPH_B; // kayıt/alınan taş listesi için
+const CHESS_VAL   = { p:100, n:320, b:330, r:500, q:900, k:0 };
+const PST = {
+  p:[0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10,
+     5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5,
+     5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0],
+  n:[-50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40, -30,0,10,15,15,10,0,-30,
+     -30,5,15,20,20,15,5,-30, -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30,
+     -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50],
+  b:[-20,-10,-10,-10,-10,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,10,10,5,0,-10,
+     -10,5,5,10,10,5,5,-10, -10,0,10,10,10,10,0,-10, -10,10,10,10,10,10,10,-10,
+     -10,5,0,0,0,0,5,-10, -20,-10,-10,-10,-10,-10,-10,-20],
+  r:[0,0,0,0,0,0,0,0, 5,10,10,10,10,10,10,5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5,
+     -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, 0,0,0,5,5,0,0,0],
+  q:[-20,-10,-10,-5,-5,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,5,5,5,0,-10,
+     -5,0,5,5,5,5,0,-5, 0,0,5,5,5,5,0,-5, -10,5,5,5,5,5,0,-10,
+     -10,0,5,0,0,0,0,-10, -20,-10,-10,-5,-5,-10,-10,-20],
+  k:[-30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30,
+     -30,-40,-40,-50,-50,-40,-40,-30, -20,-30,-30,-40,-40,-30,-30,-20, -10,-20,-20,-20,-20,-20,-20,-10,
+     20,20,0,0,0,0,20,20, 20,30,10,0,0,10,30,20],
+};
+function chessEval(g){
+  // + = white better (centipawns)
+  let s = 0;
+  const board = g.board();
+  for(let r=0;r<8;r++) for(let f=0;f<8;f++){
+    const c = board[r][f]; if(!c) continue;
+    const idx = c.color==="w" ? r*8+f : (7-r)*8+f;
+    const v = CHESS_VAL[c.type] + (PST[c.type] ? PST[c.type][idx] : 0);
+    s += c.color==="w" ? v : -v;
+  }
+  return s;
+}
+function chessOrder(moves){
+  return moves.slice().sort((a,b)=>{
+    const av = (a.captured?CHESS_VAL[a.captured]:0) + (a.flags.includes("p")?800:0);
+    const bv = (b.captured?CHESS_VAL[b.captured]:0) + (b.flags.includes("p")?800:0);
+    return bv-av;
+  });
+}
+function chessAiMove(g, level){
+  const depth = level<=1 ? 1 : level===2 ? 2 : 3;
+  let nodes = 0; const CAP = 200000;
+  function nega(d, alpha, beta){
+    const moves = g.moves({verbose:true});
+    if(moves.length===0) return g.in_check() ? -30000 + (10 - d) : 0;   // mat / pat
+    if(d===0 || nodes>CAP){
+      const e = chessEval(g);
+      return g.turn()==="w" ? e : -e;
+    }
+    let best = -Infinity;
+    for(const m of chessOrder(moves)){
+      nodes++;
+      g.move(m);
+      const val = -nega(d-1, -beta, -alpha);
+      g.undo();
+      if(val>best) best = val;
+      if(best>alpha) alpha = best;
+      if(alpha>=beta) break;
+    }
+    return best;
+  }
+  let bestMove=null, bestVal=-Infinity;
+  const moves = chessOrder(g.moves({verbose:true}));
+  for(const m of moves){
+    g.move(m);
+    let val = -nega(depth-1, -Infinity, Infinity);
+    g.undo();
+    if(level<=1) val += (Math.random()*60 - 30);       // kolay mod: gürültü
+    if(val>bestVal){ bestVal=val; bestMove=m; }
+    else if(val===bestVal && Math.random()<0.35){ bestMove=m; }
+  }
+  return bestMove || moves[0];
+}
+function chessGame(){
+  const wrap = el("div",{});
+  const Chess = window.Chess;
+  const sb = scoreboardEl("chess", [
+    {label:t("sb_result"), get:r=> resBadge(r.meta.result || "draw")},
+    {label:t("sb_moves"), num:true, get:r=>String(r.meta.moves ?? "–")},
+  ]);
+  if(typeof Chess!=="function"){
+    wrap.append(el("div",{class:"card card-pad",text:t("chess_need_lib")}), sb);
+    return wrap;
+  }
+  const g = state.game;
+  if(g.chessMode==="code") g.chessMode="ai";
+  g.chessMode = g.chessMode || "ai";
+  g.aiLevel = g.aiLevel || 2;
+
+  let engine = new Chess();
+  let names = g.chessMode==="ai"
+    ? { w:playerName(), b:t("chess_ai") }
+    : { w:t("chess_white"), b:t("chess_black") };
+  let humanSide = g.humanSide==="b" ? "b" : "w";   // ai: hangi renk sensin (oturum boyunca hatırlanır)
+  let sel = null, over = false, flip = false, aiThinking = false;
+
+  /* ---- mod seçici ---- */
+  const modes = el("div",{class:"chess-modes"});
+  [["ai",t("chess_vs_ai")],["pass",t("chess_pass")],["online",t("chess_online")]].forEach(([m,lb])=>
+    modes.append(el("button",{class:g.chessMode===m?"on":"",text:lb,onclick:()=>{ g.chessMode=m; renderApp(); }})));
+  wrap.append(modes);
+
+  if(g.chessMode==="online"){
+    wrap.append(chessOnline(sb));
+    return wrap;
+  }
+
+  /* ---- ayar satırı ---- */
+  const cfg = el("div",{class:"name-field"});
+  const nameW = el("input",{value:names.w, maxlength:40, "aria-label":t("chess_name_w")});
+  const nameB = el("input",{value:names.b, maxlength:40, "aria-label":t("chess_name_b")});
+  if(g.chessMode==="ai"){
+    const lvl = el("div",{class:"seg"});
+    [[1,t("chess_easy")],[2,t("chess_normal")],[3,t("chess_hard")]].forEach(([n,lb])=>
+      lvl.append(el("button",{class:g.aiLevel===n?"on":"",text:lb,onclick:()=>{
+        g.aiLevel=n; [...lvl.children].forEach((b,i)=>b.classList.toggle("on", i===n-1));
+      }})));
+    const sideT = el("div",{class:"seg"});
+    const setSide = s=>{ humanSide=s; g.humanSide=s; [...sideT.children].forEach((b,i)=>b.classList.toggle("on", (i===0)===(s==="w"))); };
+    sideT.append(el("button",{text:t("chess_white"),onclick:()=>setSide("w")}), el("button",{text:t("chess_black"),onclick:()=>setSide("b")}));
+    setSide(humanSide);
+    cfg.append(el("label",{text:t("chess_ai_level")}), lvl, sideT);
+  } else {
+    cfg.append(el("label",{text:t("chess_white")}), nameW, el("label",{text:t("chess_black")}), nameB);
+  }
+  cfg.append(el("button",{class:"btn primary sm",text:t("chess_new"),onclick:()=>startNew()}));
+  wrap.append(cfg);
+
+  /* ---- tahta + yan panel ---- */
+  const board = el("div",{class:"board"});
+  const status = el("div",{class:"chess-status"});
+  const capW = el("div",{class:"cap-row"});
+  const capB = el("div",{class:"cap-row"});
+  const moveList = el("div",{class:"movelist"});
+
+  const btnFlip = el("button",{class:"btn ghost sm",text:t("chess_flip"),onclick:()=>{ flip=!flip; drawBoard(); }});
+  const btnResign = el("button",{class:"btn ghost sm danger",text:t("chess_resign"),onclick:()=>{
+    if(over || !confirm(t("chess_resign_q"))) return;
+    finish(engine.turn()==="w" ? "b" : "w", "resign");
+  }});
+  const btnUndo = el("button",{class:"btn ghost sm",text:t("chess_undo"),onclick:()=>{
+    if(over || aiThinking) return;
+    engine.undo();
+    if(g.chessMode==="ai" && engine.turn()!==humanSide) engine.undo();
+    sel=null; drawBoard(); syncPanel();
+  }});
+
+  const btnPgn = el("button",{class:"btn ghost sm",text:t("chess_pgn"),onclick:()=>{
+    if(!engine.history().length){ toast(t("chess_pgn_empty")); return; }
+    try{
+      engine.header("Event","Merlfy","Site","merlfy",
+        "Date", new Date().toISOString().slice(0,10).replace(/-/g,"."),
+        "White", names.w||t("chess_white"), "Black", names.b||t("chess_black"),
+        "Result", engine.in_checkmate() ? (engine.turn()==="w"?"0-1":"1-0")
+          : (engine.in_draw()||engine.in_stalemate()) ? "1/2-1/2" : "*");
+    }catch{}
+    const pgn = engine.pgn();
+    if(navigator.clipboard){ navigator.clipboard.writeText(pgn).then(()=>toast(t("chess_pgn_copied")),()=>toast("✕")); }
+    else toast(t("chess_pgn_copied"));
+  }});
+
+  const side = el("div",{class:"chess-side"});
+  side.append(status,
+    el("div",{}, el("div",{class:"hint",style:"font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px",text:t("chess_captured")}), capW, capB),
+    moveList);
+  const btnRow = el("div",{style:"display:flex;gap:6px;flex-wrap:wrap"}, btnFlip, btnUndo, btnPgn, btnResign);
+  side.append(btnRow);
+
+  wrap.append(el("div",{class:"chess-layout"},
+    el("div",{class:"board-wrap"}, board), side), sb);
+
+  /* ---- çizim ---- */
+  function sqName(f,r){ return "abcdefgh"[f] + (r+1); }
+  function drawBoard(){
+    board.innerHTML="";
+    const inCheckSq = engine.in_check() ? kingSquare(engine.turn()) : null;
+    let legal = [];
+    if(sel) legal = engine.moves({ square:sel, verbose:true });
+    const rows = flip ? [0,1,2,3,4,5,6,7] : [7,6,5,4,3,2,1,0];
+    const files = flip ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
+    for(const r of rows) for(const f of files){
+      const name = sqName(f,r);
+      const dark = (f + r) % 2 === 0;
+      const cell = el("div",{class:"sq "+(dark?"dk":"lt"), dataset:{sq:name}});
+      const pc = engine.get(name);
+      if(pc) cell.append(el("span",{class:"pc "+pc.color, text:chessGlyph(pc.type, pc.color)}));
+      if(sel===name) cell.classList.add("sel");
+      const lm = legal.find(m=>m.to===name);
+      if(lm){ cell.classList.add("mv"); if(lm.captured || lm.flags.includes("e")) cell.classList.add("cap"); }
+      if(inCheckSq===name) cell.classList.add("chk");
+      if(f===(flip?7:0)) cell.append(el("span",{class:"co r",text:String(r+1)}));
+      if(r===(flip?7:0)) cell.append(el("span",{class:"co f",text:"abcdefgh"[f]}));
+      cell.addEventListener("click",()=>onSquare(name));
+      board.append(cell);
+    }
+  }
+  function kingSquare(color){
+    const b = engine.board();
+    for(let r=0;r<8;r++) for(let f=0;f<8;f++){ const c=b[r][f]; if(c && c.type==="k" && c.color===color) return sqName(f,r); }
+    return null;
+  }
+  function myTurn(){
+    if(over || aiThinking) return false;
+    if(g.chessMode==="pass") return true;
+    return engine.turn()===humanSide;
+  }
+  function onSquare(name){
+    modalRoot.querySelector(".promo-pop")?.remove();
+    if(!myTurn()) return;
+    const pc = engine.get(name);
+    if(sel){
+      if(name===sel){ sel=null; drawBoard(); return; }
+      const opts = engine.moves({ square:sel, verbose:true }).filter(m=>m.to===name);
+      if(opts.length){
+        if(opts.some(m=>m.flags.includes("p"))){ askPromo(sel, name); return; }
+        doMove({ from:sel, to:name });
+        return;
+      }
+      if(pc && pc.color===engine.turn()){ sel=name; drawBoard(); return; }
+      sel=null; drawBoard(); return;
+    }
+    if(pc && pc.color===engine.turn()){ sel=name; drawBoard(); }
+  }
+  function askPromo(from,to){
+    modalRoot.querySelector(".promo-pop")?.remove();
+    const ov = el("div",{class:"overlay promo-pop",onclick:e=>{ if(e.target===ov) ov.remove(); }});
+    const pop = el("div",{class:"modal",style:"width:auto;padding:14px"});
+    pop.append(el("div",{style:"font-size:12px;color:var(--text-dim);margin-bottom:8px;text-align:center",text:t("chess_promote")}));
+    const row = el("div",{style:"display:flex;gap:6px"});
+    const pcol = engine.turn();
+    ["q","r","b","n"].forEach(p=>row.append(el("button",{class:"promo-btn",style:"font-size:30px;width:52px;height:52px;border:1px solid var(--border-strong);border-radius:8px",
+      text:chessGlyph(p,pcol),"aria-label":p,onclick:()=>{ ov.remove(); doMove({ from, to, promotion:p }); }})));
+    pop.append(row); ov.append(pop); modalRoot.append(ov);
+  }
+  function doMove(mv){
+    const res = engine.move(mv);
+    if(!res) return;
+    sel=null;
+    afterMove();
+  }
+  function afterMove(){
+    drawBoard(); syncPanel();
+    if(checkEnd()) return;
+    if(g.chessMode==="ai" && engine.turn()!==humanSide){
+      aiThinking = true; status.textContent = t("chess_ai_thinking");
+      stopGameTimer();
+      chessAiTimer = setTimeout(()=>{
+        if(!board.isConnected) return;
+        const m = chessAiMove(engine, g.aiLevel);
+        aiThinking = false;
+        if(m){ engine.move(m); drawBoard(); syncPanel(); if(!checkEnd()) status.innerHTML = turnLine(); }
+      }, 220);
+    } else {
+      status.innerHTML = turnLine();
+    }
+  }
+  function turnLine(){
+    const base = engine.turn()==="w" ? t("chess_turn_w") : t("chess_turn_b");
+    const chk = engine.in_check() ? ` <span style="color:var(--danger)">${t("chess_check")}</span>` : "";
+    const who = g.chessMode==="pass" ? "" : (myTurn() ? ` <span style="color:var(--accent)">${t("chess_your_turn")}</span>` : "");
+    return base + chk + who;
+  }
+  function syncPanel(){
+    // alınan taşlar
+    const capsW=[], capsB=[]; let advW=0, advB=0;
+    engine.history({verbose:true}).forEach(m=>{
+      if(m.captured){
+        if(m.color==="w"){ capsW.push(m.captured); advW += CHESS_VAL[m.captured]; }
+        else { capsB.push(m.captured); advB += CHESS_VAL[m.captured]; }
+      }
+    });
+    const order = p=>({q:0,r:1,b:2,n:3,p:4}[p]);
+    capsW.sort((a,b)=>order(a)-order(b)); capsB.sort((a,b)=>order(a)-order(b));
+    capW.innerHTML=""; capB.innerHTML="";
+    capW.append(el("span",{class:"hint",style:"font-size:10px;align-self:center;margin-right:2px",text:t("chess_white")}));
+    capsW.forEach(p=>capW.append(el("span",{class:"pc b",text:CHESS_GLYPH[p]})));
+    const d1 = Math.round((advW-advB)/100);
+    if(d1>0) capW.append(el("span",{class:"adv",text:"+"+d1}));
+    capB.append(el("span",{class:"hint",style:"font-size:10px;align-self:center;margin-right:2px",text:t("chess_black")}));
+    capsB.forEach(p=>capB.append(el("span",{class:"pc b",text:CHESS_GLYPH[p]})));
+    if(-d1>0) capB.append(el("span",{class:"adv",text:"+"+(-d1)}));
+    // hamle listesi
+    const h = engine.history();
+    moveList.innerHTML="";
+    for(let i=0;i<h.length;i+=2){
+      moveList.append(el("span",{class:"mv-no",text:` ${i/2+1}.`}), document.createTextNode(" "+h[i]+" "+(h[i+1]||"")));
+    }
+    moveList.scrollTop = moveList.scrollHeight;
+  }
+  function checkEnd(){
+    if(engine.in_checkmate()){ finish(engine.turn()==="w" ? "b" : "w", "checkmate"); return true; }
+    if(engine.in_stalemate()){ finish(null, "stalemate"); return true; }
+    if(engine.in_draw() || engine.insufficient_material() || engine.in_threefold_repetition()){ finish(null, "draw"); return true; }
+    return false;
+  }
+  async function finish(winner, reason){
+    if(over) return;
+    over = true; aiThinking = false; sel=null; stopGameTimer();
+    drawBoard();
+    const plies = engine.history().length;
+    const fullMoves = Math.ceil(plies/2);
+    if(g.chessMode==="pass"){ names = { w:nameW.value.trim()||t("chess_white"), b:nameB.value.trim()||t("chess_black") }; }
+    let line;
+    if(!winner){
+      line = reason==="stalemate" ? t("chess_stalemate") : t("chess_draw");
+      await scoreStore.add("chess",{ player:names.w, score:0, meta:{ result:"draw", moves:fullMoves, mode:g.chessMode } });
+      await scoreStore.add("chess",{ player:names.b, score:0, meta:{ result:"draw", moves:fullMoves, mode:g.chessMode } });
+    } else {
+      const wName = names[winner], lName = names[winner==="w"?"b":"w"];
+      const pts = Math.max(10, 220 - plies);
+      const prefix = reason==="checkmate" ? t("chess_checkmate")+" · "
+        : reason==="resign" ? (LANG==="tr"?"Pes · ":"Resign · ") : "";
+      line = `${prefix}${wName} ${t("chess_wins")}`;
+      await scoreStore.add("chess",{ player:wName, score:pts, meta:{ result:"win", moves:fullMoves, mode:g.chessMode, opponent:lName } });
+      await scoreStore.add("chess",{ player:lName, score:0, meta:{ result:"loss", moves:fullMoves, mode:g.chessMode, opponent:wName } });
+    }
+    status.innerHTML = `<span>${line}</span><span class="sub">${fullMoves} ${t("sb_moves").toLowerCase()}</span>`;
+    sb.reload();
+  }
+  function startNew(){
+    stopGameTimer();
+    engine = new Chess();
+    over=false; sel=null; aiThinking=false;
+    if(g.chessMode==="ai"){
+      names = { w: humanSide==="w"?playerName():t("chess_ai"), b: humanSide==="b"?playerName():t("chess_ai") };
+      flip = humanSide==="b";
+    } else {
+      names = { w:nameW.value.trim()||t("chess_white"), b:nameB.value.trim()||t("chess_black") };
+      flip = false;
+    }
+    drawBoard(); syncPanel();
+    status.innerHTML = turnLine();
+    if(g.chessMode==="ai" && humanSide==="b"){ afterMove(); }  // AI (beyaz) ilk hamleyi yapsın
+  }
+
+  startNew();
+  return wrap;
+}
+
+/* ---------- satranç: online (gerçek zamanlı, Firestore) ---------- */
+function onlineCode(){
+  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  return Array.from({length:6}, ()=>A[Math.floor(Math.random()*A.length)]).join("");
+}
+function chessOnline(sb){
+  const wrap = el("div",{});
+  const ONLINE_KEY = "merlfy.chess.online."+state.user.id;
+  let savedId = ""; try{ savedId = localStorage.getItem(ONLINE_KEY)||""; }catch{}
+  wrap.append(savedId ? chessOnlineRoom(savedId, ONLINE_KEY, sb) : chessOnlineLobby(ONLINE_KEY));
+  return wrap;
+}
+function chessOnlineLobby(ONLINE_KEY){
+  const box = el("div",{class:"card card-pad"});
+  const err = el("div",{class:"err",style:"display:none"});
+  box.append(el("p",{class:"hint",style:"margin:0 0 12px",text:t("chess_online_intro")}));
+  box.append(el("button",{class:"btn primary sm",text:t("chess_online_new"),onclick:async function(){
+    this.disabled = true;
+    try{
+      const id = uid();
+      const doc = { id, code:onlineCode(), whiteId:state.user.id, whiteName:playerName(),
+        blackId:null, blackName:null, moves:[], status:"waiting", winner:null, reason:null,
+        createdAt:Date.now(), updatedAt:Date.now() };
+      await fdb.collection("chessGames").doc(id).set(doc);
+      try{ localStorage.setItem(ONLINE_KEY, id); }catch{}
+      renderApp();
+    }catch(e){ err.textContent = e.message||t("chess_online_error"); err.style.display="block"; this.disabled=false; }
+  }}));
+  box.append(el("div",{style:"height:14px"}));
+  const codeIn = el("input",{class:"input",style:"max-width:150px;text-transform:uppercase",maxlength:6,
+    placeholder:t("chess_online_code_ph"),"aria-label":t("chess_online_code_ph")});
+  const joinBtn = el("button",{class:"btn sm",text:t("chess_online_join_btn"),onclick:async function(){
+    const code = codeIn.value.trim().toUpperCase();
+    if(!code) return;
+    this.disabled = true; err.style.display="none";
+    try{
+      const snap = await fdb.collection("chessGames").where("code","==",code).limit(1).get();
+      const d = snap.empty ? null : snap.docs[0];
+      const data = d ? d.data() : null;
+      if(!data || data.status!=="waiting" || data.whiteId===state.user.id){
+        err.textContent = t("chess_online_not_found"); err.style.display="block"; this.disabled=false; return;
+      }
+      await d.ref.update({ blackId:state.user.id, blackName:playerName(), status:"active", updatedAt:Date.now() });
+      try{ localStorage.setItem(ONLINE_KEY, data.id); }catch{}
+      renderApp();
+    }catch(e){ err.textContent = e.message||t("chess_online_error"); err.style.display="block"; this.disabled=false; }
+  }});
+  box.append(el("div",{class:"name-field"}, codeIn, joinBtn));
+  box.append(err);
+  return box;
+}
+function chessOnlineRoom(gameId, ONLINE_KEY, sb){
+  const wrap = el("div",{});
+  const Chess = window.Chess;
+  let engine = new Chess(), flip = false, sel = null, myColor = null, docData = null, over = false, scored = false;
+
+  const info = el("div",{class:"hint",style:"margin-bottom:8px"});
+  const board = el("div",{class:"board"});
+  const status = el("div",{class:"chess-status"});
+  const capW = el("div",{class:"cap-row"});
+  const capB = el("div",{class:"cap-row"});
+  const moveList = el("div",{class:"movelist"});
+
+  const btnFlip = el("button",{class:"btn ghost sm",text:t("chess_flip"),onclick:()=>{ flip=!flip; drawBoard(); }});
+  const btnCopy = el("button",{class:"btn ghost sm",text:t("chess_online_copy"),hidden:true,onclick:()=>{
+    if(docData){ navigator.clipboard?.writeText(docData.code); toast(t("chess_online_copied")); }
+  }});
+  const btnPgn = el("button",{class:"btn ghost sm",text:t("chess_pgn"),onclick:()=>{
+    if(!engine.history().length){ toast(t("chess_pgn_empty")); return; }
+    try{
+      engine.header("Event","Merlfy","Site","merlfy",
+        "Date", new Date().toISOString().slice(0,10).replace(/-/g,"."),
+        "White", docData?.whiteName||t("chess_white"), "Black", docData?.blackName||t("chess_black"),
+        "Result", engine.in_checkmate() ? (engine.turn()==="w"?"0-1":"1-0")
+          : (engine.in_draw()||engine.in_stalemate()) ? "1/2-1/2" : "*");
+    }catch{}
+    const pgn = engine.pgn();
+    if(navigator.clipboard){ navigator.clipboard.writeText(pgn).then(()=>toast(t("chess_pgn_copied")),()=>toast("✕")); }
+    else toast(t("chess_pgn_copied"));
+  }});
+  const btnLeave = el("button",{class:"btn ghost sm danger",text:t("chess_online_leave"),onclick:leaveGame});
+
+  const side = el("div",{class:"chess-side"});
+  side.append(status,
+    el("div",{}, el("div",{class:"hint",style:"font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px",text:t("chess_captured")}), capW, capB),
+    moveList,
+    el("div",{style:"display:flex;gap:6px;flex-wrap:wrap"}, btnFlip, btnPgn, btnCopy, btnLeave));
+
+  wrap.append(info, el("div",{class:"chess-layout"},
+    el("div",{class:"board-wrap"}, board), side), sb);
+
+  function sqName(f,r){ return "abcdefgh"[f] + (r+1); }
+  function kingSquare(color){
+    const b = engine.board();
+    for(let r=0;r<8;r++) for(let f=0;f<8;f++){ const c=b[r][f]; if(c && c.type==="k" && c.color===color) return sqName(f,r); }
+    return null;
+  }
+  function drawBoard(){
+    board.innerHTML="";
+    const inCheckSq = engine.in_check() ? kingSquare(engine.turn()) : null;
+    let legal = [];
+    if(sel) legal = engine.moves({ square:sel, verbose:true });
+    const rows = flip ? [0,1,2,3,4,5,6,7] : [7,6,5,4,3,2,1,0];
+    const files = flip ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7];
+    for(const r of rows) for(const f of files){
+      const name = sqName(f,r);
+      const dark = (f + r) % 2 === 0;
+      const cell = el("div",{class:"sq "+(dark?"dk":"lt"), dataset:{sq:name}});
+      const pc = engine.get(name);
+      if(pc) cell.append(el("span",{class:"pc "+pc.color, text:chessGlyph(pc.type, pc.color)}));
+      if(sel===name) cell.classList.add("sel");
+      const lm = legal.find(m=>m.to===name);
+      if(lm){ cell.classList.add("mv"); if(lm.captured || lm.flags.includes("e")) cell.classList.add("cap"); }
+      if(inCheckSq===name) cell.classList.add("chk");
+      if(f===(flip?7:0)) cell.append(el("span",{class:"co r",text:String(r+1)}));
+      if(r===(flip?7:0)) cell.append(el("span",{class:"co f",text:"abcdefgh"[f]}));
+      cell.addEventListener("click",()=>onSquare(name));
+      board.append(cell);
+    }
+  }
+  function myTurn(){
+    return !over && docData && docData.status==="active" && myColor && engine.turn()===myColor;
+  }
+  function onSquare(name){
+    modalRoot.querySelector(".promo-pop")?.remove();
+    if(!myTurn()) return;
+    const pc = engine.get(name);
+    if(sel){
+      if(name===sel){ sel=null; drawBoard(); return; }
+      const opts = engine.moves({ square:sel, verbose:true }).filter(m=>m.to===name);
+      if(opts.length){
+        if(opts.some(m=>m.flags.includes("p"))){ askPromo(sel, name); return; }
+        sendMove({ from:sel, to:name });
+        return;
+      }
+      if(pc && pc.color===engine.turn()){ sel=name; drawBoard(); return; }
+      sel=null; drawBoard(); return;
+    }
+    if(pc && pc.color===engine.turn()){ sel=name; drawBoard(); }
+  }
+  function askPromo(from,to){
+    modalRoot.querySelector(".promo-pop")?.remove();
+    const ov = el("div",{class:"overlay promo-pop",onclick:e=>{ if(e.target===ov) ov.remove(); }});
+    const pop = el("div",{class:"modal",style:"width:auto;padding:14px"});
+    pop.append(el("div",{style:"font-size:12px;color:var(--text-dim);margin-bottom:8px;text-align:center",text:t("chess_promote")}));
+    const row = el("div",{style:"display:flex;gap:6px"});
+    const pcol = engine.turn();
+    ["q","r","b","n"].forEach(p=>row.append(el("button",{class:"promo-btn",style:"font-size:30px;width:52px;height:52px;border:1px solid var(--border-strong);border-radius:8px",
+      text:chessGlyph(p,pcol),"aria-label":p,onclick:()=>{ ov.remove(); sendMove({ from, to, promotion:p }); }})));
+    pop.append(row); ov.append(pop); modalRoot.append(ov);
+  }
+  async function sendMove(mv){
+    sel = null; drawBoard();
+    const test = new Chess();
+    (docData.moves||[]).forEach(san=>test.move(san));
+    const res = test.move(mv);
+    if(!res) return;
+    const patch = { moves:[...(docData.moves||[]), res.san], updatedAt:Date.now() };
+    if(test.in_checkmate()){ patch.status="done"; patch.winner=test.turn()==="w"?"b":"w"; patch.reason="checkmate"; }
+    else if(test.in_stalemate()){ patch.status="done"; patch.winner=null; patch.reason="stalemate"; }
+    else if(test.in_draw() || test.insufficient_material() || test.in_threefold_repetition()){ patch.status="done"; patch.winner=null; patch.reason="draw"; }
+    if(patch.status==="done") await recordScore(patch.winner, patch.reason, patch.moves.length);
+    try{ await fdb.collection("chessGames").doc(gameId).update(patch); }
+    catch(e){ toast("✕ "+(e.message||t("chess_online_error"))); }
+  }
+  async function recordScore(winner, reason, plies){
+    if(scored) return; scored = true;
+    const fullMoves = Math.ceil(plies/2);
+    if(!winner){
+      await scoreStore.add("chess",{ player:docData.whiteName, score:0, meta:{ result:"draw", moves:fullMoves, mode:"online" } });
+      await scoreStore.add("chess",{ player:docData.blackName, score:0, meta:{ result:"draw", moves:fullMoves, mode:"online" } });
+    } else {
+      const names = { w:docData.whiteName, b:docData.blackName };
+      const wName = names[winner], lName = names[winner==="w"?"b":"w"];
+      const pts = Math.max(10, 220 - plies);
+      await scoreStore.add("chess",{ player:wName, score:pts, meta:{ result:"win", moves:fullMoves, mode:"online", opponent:lName } });
+      await scoreStore.add("chess",{ player:lName, score:0, meta:{ result:"loss", moves:fullMoves, mode:"online", opponent:wName } });
+    }
+    sb.reload();
+  }
+  async function doResign(){
+    const winner = myColor==="w" ? "b" : "w";
+    await recordScore(winner, "resign", engine.history().length);
+    try{ await fdb.collection("chessGames").doc(gameId).update({ status:"done", winner, reason:"resign", updatedAt:Date.now() }); }
+    catch(e){ toast("✕ "+(e.message||t("chess_online_error"))); }
+  }
+  async function leaveGame(){
+    if(docData && docData.status==="active"){
+      if(!confirm(t("chess_resign_q"))) return;
+      await doResign();
+    } else if(docData && docData.status==="waiting" && docData.whiteId===state.user.id){
+      try{ await fdb.collection("chessGames").doc(gameId).delete(); }catch{}
+    }
+    try{ localStorage.removeItem(ONLINE_KEY); }catch{}
+    renderApp();
+  }
+  function syncPanel(){
+    const capsW=[], capsB=[]; let advW=0, advB=0;
+    engine.history({verbose:true}).forEach(m=>{
+      if(m.captured){
+        if(m.color==="w"){ capsW.push(m.captured); advW += CHESS_VAL[m.captured]; }
+        else { capsB.push(m.captured); advB += CHESS_VAL[m.captured]; }
+      }
+    });
+    const order = p=>({q:0,r:1,b:2,n:3,p:4}[p]);
+    capsW.sort((a,b)=>order(a)-order(b)); capsB.sort((a,b)=>order(a)-order(b));
+    capW.innerHTML=""; capB.innerHTML="";
+    capW.append(el("span",{class:"hint",style:"font-size:10px;align-self:center;margin-right:2px",text:t("chess_white")}));
+    capsW.forEach(p=>capW.append(el("span",{class:"pc b",text:CHESS_GLYPH[p]})));
+    const d1 = Math.round((advW-advB)/100);
+    if(d1>0) capW.append(el("span",{class:"adv",text:"+"+d1}));
+    capB.append(el("span",{class:"hint",style:"font-size:10px;align-self:center;margin-right:2px",text:t("chess_black")}));
+    capsB.forEach(p=>capB.append(el("span",{class:"pc b",text:CHESS_GLYPH[p]})));
+    if(-d1>0) capB.append(el("span",{class:"adv",text:"+"+(-d1)}));
+    const h = engine.history();
+    moveList.innerHTML="";
+    for(let i=0;i<h.length;i+=2){
+      moveList.append(el("span",{class:"mv-no",text:` ${i/2+1}.`}), document.createTextNode(" "+h[i]+" "+(h[i+1]||"")));
+    }
+    moveList.scrollTop = moveList.scrollHeight;
+  }
+  function turnLine(){
+    const base = engine.turn()==="w" ? t("chess_turn_w") : t("chess_turn_b");
+    const chk = engine.in_check() ? ` <span style="color:var(--danger)">${t("chess_check")}</span>` : "";
+    const who = myTurn() ? ` <span style="color:var(--accent)">${t("chess_your_turn")}</span>` : "";
+    return base + chk + who;
+  }
+  function applySnapshot(data){
+    docData = data;
+    myColor = data.whiteId===state.user.id ? "w" : data.blackId===state.user.id ? "b" : null;
+    engine = new Chess();
+    (data.moves||[]).forEach(san=>{ try{ engine.move(san); }catch{} });
+    over = data.status==="done";
+    flip = myColor==="b";
+    btnCopy.hidden = data.status!=="waiting";
+    btnLeave.textContent = data.status==="waiting" ? t("chess_online_cancel")
+      : data.status==="active" ? t("chess_resign") : t("chess_online_leave");
+    if(data.status==="waiting"){
+      info.textContent = `${t("chess_online_waiting")} · ${data.code}`;
+      status.textContent = t("chess_online_waiting_short");
+    } else {
+      const oppName = myColor==="w" ? (data.blackName||"…") : data.whiteName;
+      info.textContent = `${t("chess_online_you_are")} ${myColor==="w"?t("chess_white"):t("chess_black")} · vs ${oppName}`;
+      if(data.status==="done"){
+        const fullMoves = Math.ceil((data.moves||[]).length/2);
+        let line;
+        if(!data.winner) line = data.reason==="stalemate" ? t("chess_stalemate") : t("chess_draw");
+        else {
+          const names = { w:data.whiteName, b:data.blackName };
+          const prefix = data.reason==="checkmate" ? t("chess_checkmate")+" · "
+            : data.reason==="resign" ? (LANG==="tr"?"Pes · ":"Resign · ") : "";
+          line = `${prefix}${names[data.winner]} ${t("chess_wins")}`;
+        }
+        status.innerHTML = `<span>${line}</span><span class="sub">${fullMoves} ${t("sb_moves").toLowerCase()}</span>`;
+      } else {
+        status.innerHTML = turnLine();
+      }
+    }
+    drawBoard(); syncPanel();
+  }
+
+  chessOnlineUnsub = fdb.collection("chessGames").doc(gameId).onSnapshot(snap=>{
+    if(!snap.exists){ try{ localStorage.removeItem(ONLINE_KEY); }catch{} renderApp(); return; }
+    applySnapshot(snap.data());
+  }, err=>{ toast("✕ "+(err.message||t("chess_online_error"))); });
+
+  return wrap;
+}
+
+/* ---------- trash ---------- */
+function trashView(list){
+  const box = el("div",{class:"feed"});
+  if(!list.length){
+    box.append(el("div",{class:"empty"}, el("div",{class:"big",text:"🗑"}),
+      el("p",{style:"font-weight:600;color:var(--text)",text:t("empty_trash_t")}), el("p",{text:t("empty_trash_p")})));
+    return box;
+  }
+  list.sort((a,b)=>b.deletedAt-a.deletedAt).forEach(m=>{
+    const daysLeft = Math.max(0, 30 - Math.floor((Date.now()-m.deletedAt)/86400000));
+    const card = el("article",{class:"memo"});
+    card.append(el("div",{class:"memo-head"},
+      el("time",{text:relTime(m.createdAt)}),
+      el("span",{class:"vis",text:daysLeft+" "+t("deleted_in")}),
+      el("span",{class:"sp"})));
+    const tbody = el("div",{class:"prose",html:renderMarkdown(m.content)});
+    $$('input[type="checkbox"][data-task]', tbody).forEach(cb=>cb.disabled=true);
+    card.append(tbody);
+    card.append(el("div",{style:"display:flex;gap:8px;margin-top:10px"},
+      el("button",{class:"btn sm",text:t("restore"),onclick:async()=>{ m.deletedAt=null; await store.saveMemo(m); renderApp(); }}),
+      el("button",{class:"btn sm danger",text:t("delete_forever"),onclick:async()=>{
+        if(!confirm(t("confirm_del_forever"))) return;
+        for(const id of (m.images||[])) await idbDel("resources",id);
+        await idbDel("memos",m.id); renderApp();
+      }})));
+    box.append(card);
+  });
+  return box;
+}
+
+/* ---------- settings ---------- */
+function settingsView(){
+  const wrap = el("div",{style:"display:flex;flex-direction:column;gap:14px"});
+
+  // profile
+  const p = el("div",{class:"card card-pad"});
+  p.append(el("h3",{text:t("settings_profile")}));
+  const dn = el("input",{class:"input",value:state.user.displayName});
+  const av = el("input",{class:"input",value:state.user.avatar||"",placeholder:"https://…"});
+  const avFile = el("input",{type:"file",accept:"image/*",style:"display:none"});
+  avFile.addEventListener("change",async e=>{ if(e.target.files[0]){ av.value = await fileToImage(e.target.files[0]); } });
+  p.append(field(t("displayname"),dn));
+  const avField = field(t("avatar_url"),av);
+  avField.append(el("button",{class:"btn sm",style:"align-self:start",text:t("choose_file")+" ↑",onclick:()=>avFile.click()}), avFile);
+  p.append(avField);
+  p.append(el("button",{class:"btn primary",text:t("save_profile"),onclick:async()=>{
+    state.user.displayName = dn.value.trim()||state.user.username;
+    state.user.avatar = av.value.trim();
+    await idbPut("users",state.user); toast("✓"); renderApp();
+  }}));
+  // change password
+  const cur = el("input",{class:"input",type:"password"});
+  const np = el("input",{class:"input",type:"password"});
+  const pwErr = el("div",{class:"err",style:"display:none"});
+  p.append(el("hr",{style:"border:none;border-top:1px solid var(--border);margin:14px 0"}));
+  p.append(el("h3",{text:t("change_pass")}), field(t("current_pass"),cur), field(t("new_pass"),np), pwErr);
+  p.append(el("button",{class:"btn",text:t("change_pass"),onclick:async()=>{
+    pwErr.style.display="none";
+    if(np.value.length<6){ pwErr.textContent=t("pass_short"); pwErr.style.display="block"; return; }
+    try{
+      const cred = firebase.auth.EmailAuthProvider.credential(auth.currentUser.email, cur.value);
+      await auth.currentUser.reauthenticateWithCredential(cred);
+      await auth.currentUser.updatePassword(np.value);
+      cur.value=np.value=""; toast("✓");
+    }catch(ex){ pwErr.textContent=t("wrong_pass"); pwErr.style.display="block"; }
+  }}));
+  wrap.append(p);
+
+  // appearance
+  const ap = el("div",{class:"card card-pad"});
+  ap.append(el("h3",{text:t("settings_appearance")}));
+  const themeNow = localStorage.getItem("merlfy.theme")||"system";
+  const tSeg = el("div",{class:"seg"});
+  [["system",t("theme_system")],["light",t("theme_light")],["dark",t("theme_dark")]].forEach(([v,lb])=>
+    tSeg.append(el("button",{class:themeNow===v?"on":"",text:lb,onclick:()=>{
+      localStorage.setItem("merlfy.theme",v); applyTheme(v); renderApp();
+    }})));
+  ap.append(field(t("theme"),tSeg));
+  const lSeg = el("div",{class:"seg"});
+  [["tr","Türkçe"],["en","English"]].forEach(([v,lb])=>
+    lSeg.append(el("button",{class:LANG===v?"on":"",text:lb,onclick:()=>{
+      LANG=v; localStorage.setItem("merlfy.lang",v); renderApp();
+    }})));
+  ap.append(field(t("language"),lSeg));
+  wrap.append(ap);
+
+  // accounts (site-wide, owner only — bireysel profil ekleme/kaldırma artık yok, herkes kendi Firebase hesabıyla kayıt oluyor)
+  if(state.user.role==="owner"){
+    const ac = el("div",{class:"card card-pad"});
+    ac.append(el("h3",{text:t("settings_accounts")}));
+    ac.append(el("div",{class:"a"}, avatarNode(state.user,"lg"),
+      el("span",{class:"meta"}, el("b",{text:state.user.displayName}), el("br"), el("span",{class:"hint",text:"@"+state.user.username})),
+      el("span",{class:"sp"}), el("span",{class:"badge",text:t("owner")})));
+    ac.append(el("label",{class:"krow",style:"cursor:pointer;border:none;margin-top:8px"},
+      (()=>{ const cb=el("input",{type:"checkbox"}); cb.checked=state.allowReg;
+        cb.addEventListener("change",async()=>{ state.allowReg=cb.checked; await store.setSetting("allowReg",cb.checked); }); return cb; })(),
+      el("span",{text:" "+t("allow_reg")})));
+    wrap.append(ac);
+  }
+
+  // telegram
+  const tg = el("div",{class:"card card-pad"});
+  tg.append(el("h3",{text:t("settings_telegram")}));
+  tg.append(el("p",{class:"hint",text:t("tg_intro")}));
+  tg.append(el("div",{class:"krow",style:"margin-top:8px"},
+    el("span",{text:t("tg_pair")}),
+    el("code",{style:"font-family:var(--mono);background:var(--accent-weak);color:var(--accent);padding:2px 8px;border-radius:6px",text:state.user.pairingCode})));
+  tg.append(el("p",{class:"hint",style:"margin-top:6px"}, t("tg_pair_help")+" ",
+    el("code",{text:"/pair "+state.user.pairingCode})));
+  const tgAll = el("input",{type:"checkbox"});
+  tg.append(el("label",{class:"krow",style:"cursor:pointer;border:none;margin-top:8px"}, tgAll, el("span",{text:" "+t("tg_import_all")})));
+  const tgFile = el("input",{type:"file",accept:".json,application/json",style:"display:none"});
+  tgFile.addEventListener("change",e=>{ if(e.target.files[0]) importTelegram(e.target.files[0], tgAll.checked); e.target.value=""; });
+  tg.append(el("button",{class:"btn primary",text:t("tg_import"),onclick:()=>tgFile.click()}), tgFile);
+  wrap.append(tg);
+
+  // data
+  const dt = el("div",{class:"card card-pad"});
+  dt.append(el("h3",{text:t("settings_data")}));
+  dt.append(el("p",{class:"hint",text:t("export_sub")}));
+  dt.append(el("div",{style:"display:flex;gap:8px;margin:8px 0 16px"},
+    el("button",{class:"btn",text:t("export"),onclick:exportModal})));
+  dt.append(el("p",{class:"hint",text:t("import_sub")}));
+  dt.append(el("button",{class:"btn",style:"margin-top:8px",text:t("import"),onclick:importModal}));
+  if(cache.memos.some(m=>!m.deletedAt)){
+    dt.append(el("hr",{style:"border:none;border-top:1px solid var(--border);margin:14px 0"}));
+    dt.append(el("button",{class:"btn primary",text:"📤 "+t("wrapped_btn"),onclick:shareRecap}));
+  }
+  wrap.append(dt);
+
+  return wrap;
+}
+
+/* ---------- modals ---------- */
+function modal(title, bodyNode, footNodes){
+  const ov = el("div",{class:"overlay",onclick:e=>{ if(e.target===ov) ov.remove(); }});
+  const m = el("div",{class:"modal",role:"dialog","aria-modal":"true","aria-label":title});
+  m.append(el("div",{class:"modal-head"}, el("h2",{text:title}),
+    el("button",{class:"icon-btn","aria-label":"close",text:"✕",onclick:()=>ov.remove()})));
+  m.append(el("div",{class:"modal-body"}, bodyNode));
+  if(footNodes) m.append(el("div",{class:"modal-foot"}, ...footNodes));
+  ov.append(m); modalRoot.append(ov);
+  const esc=e=>{ if(e.key==="Escape"){ ov.remove(); document.removeEventListener("keydown",esc); } };
+  document.addEventListener("keydown",esc);
+  return ov;
+}
+async function buildExport(){
+  // Sadece GİRİŞ YAPMIŞ kullanıcının kendi verisi — artık paylaşılan, herkese açık bir
+  // veritabanı olduğu için tüm kullanıcıları/memoları dışa aktarmak ciddi bir gizlilik
+  // ihlali olurdu.
+  const memos = await store.memos(state.user.id);
+  const resources = (await Promise.all(
+    [...new Set(memos.flatMap(m=>m.images||[]))].map(id=>idbGet("resources",id))
+  )).filter(Boolean);
+  return JSON.stringify({ app:"merlfy", version:2, exportedAt:new Date().toISOString(),
+    user: state.user, memos, resources }, null, 2);
+}
+async function exportModal(){
+  const json = await buildExport();
+  const ta = el("textarea",{class:"code-out",readonly:true}); ta.value=json;
+  const ov = modal(t("export"), el("div",{}, el("p",{class:"hint",style:"margin-top:0",text:t("export_sub")}), ta), [
+    el("button",{class:"btn",text:t("download"),onclick:()=>{
+      const a = el("a",{href:URL.createObjectURL(new Blob([json],{type:"application/json"})), download:`merlfy-backup-${dayKey(Date.now())}.json`});
+      document.body.append(a); a.click(); a.remove();
+    }}),
+    el("button",{class:"btn primary",text:t("copy"),onclick:()=>{ navigator.clipboard?.writeText(json); toast(t("copied")); }})
+  ]);
+}
+async function applyBackupJson(text){
+  // Eski (yerel/offline) sürümden alınmış bir yedeği, ŞU AN giriş yapılan hesaba aktarır.
+  // "users" alanı artık anlamsız (gerçek hesaplar Firebase'de) — yok sayılır; her memo'nun
+  // sahibi güvenlik kuralları gereği geçerli olan tek değere, mevcut kullanıcının id'sine çevrilir.
+  if(!state.user) return null;
+  let data; try{ data = JSON.parse(text); }catch{ return null; }
+  if(!data || data.app!=="merlfy" || !Array.isArray(data.memos)) return null;
+  let n=0;
+  for(const r of (data.resources||[])){ if(!(await idbGet("resources",r.id))) await idbPut("resources",{...r, userId:state.user.id}); }
+  for(const m of data.memos){
+    if(!(await idbGet("memos",m.id))){ await idbPut("memos",{...m, userId:state.user.id}); n++; }
+  }
+  return n;
+}
+function importModal(){
+  const ta = el("textarea",{class:"code-out",placeholder:'{ "app":"merlfy", … }'});
+  const file = el("input",{type:"file",accept:".json,application/json"});
+  file.addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; const fr=new FileReader();
+    fr.onload=()=>{ ta.value=fr.result; }; fr.readAsText(f); });
+  const err = el("div",{class:"err",style:"display:none"});
+  const ov = modal(t("import"), el("div",{}, el("p",{class:"hint",style:"margin-top:0",text:t("import_sub")}), file,
+    el("div",{style:"height:10px"}), ta, err), [
+    el("button",{class:"btn",text:t("cancel"),onclick:()=>ov.remove()}),
+    el("button",{class:"btn primary",text:t("import"),onclick:async()=>{
+      err.style.display="none";
+      const n = await applyBackupJson(ta.value);
+      if(n===null){ err.textContent=t("import_bad"); err.style.display="block"; return; }
+      ov.remove(); toast(n+" "+t("import_done")); renderApp();
+    }})
+  ]);
+}
+
+async function importTelegram(file, importAll){
+  const text = await file.text();
+  let data; try{ data = JSON.parse(text); }catch{ toast(t("import_bad")); return; }
+  const msgs = Array.isArray(data.messages)? data.messages : [];
+  const done = new Set(state.user.importedTg||[]);
+  let n=0;
+  for(const msg of msgs){
+    const mid = String(msg.id ?? msg.message_id ?? "");
+    if(!mid || done.has(mid)) continue;
+    const codeOk = importAll || !msg.pairingCode || msg.pairingCode.toUpperCase()===state.user.pairingCode;
+    if(!codeOk) continue;
+    const ts = msg.date ? (msg.date>1e11? msg.date : msg.date*1000) : Date.now();
+    const imgIds=[];
+    for(const im of (msg.images||[])){
+      if(typeof im==="string" && im.startsWith("data:image/")){
+        const r={id:uid(),userId:state.user.id,dataUrl:im,createdAt:ts}; await idbPut("resources",r); imgIds.push(r.id);
+      }
+    }
+    const content = (msg.text||msg.caption||"").trim() || (imgIds.length? "" : null);
+    if(content===null && !imgIds.length) { done.add(mid); continue; }
+    await store.saveMemo({ id:uid(), userId:state.user.id, content:content||"", visibility:"private",
+      pinned:false, createdAt:ts, updatedAt:ts, deletedAt:null, images:imgIds, source:"telegram" });
+    done.add(mid); n++;
+  }
+  state.user.importedTg = [...done];
+  await idbPut("users", state.user);
+  toast(n? (n+" "+t("tg_imported")) : t("tg_none"));
+  renderApp();
+}
+
+/* ---------- shortcuts ---------- */
+let shortcutsWired=false, gPending=false;
+function wireShortcuts(){
+  if(shortcutsWired) return; shortcutsWired=true;
+  document.addEventListener("keydown", e=>{
+    if(e.key==="Escape"){ $$(".overlay,.lightbox,.menu-pop").forEach(x=>x.remove()); return; }
+    const tag = (e.target.tagName||"").toLowerCase();
+    if(tag==="input"||tag==="textarea"||tag==="select"||e.metaKey||e.ctrlKey||e.altKey) return;
+    if(!state.user) return;
+    if(gPending){
+      gPending=false;
+      if(e.key==="a"){ go("feed"); return; }
+      if(e.key==="k"){ go("explore"); return; }
+      if(e.key==="t"){ go("calendar"); return; }
+      if(e.key==="c"){ go("trash"); return; }
+    }
+    if(e.key==="g"){ gPending=true; setTimeout(()=>gPending=false,700); return; }
+    if(e.key==="n"){ e.preventDefault(); if(state.view!=="feed") go("feed"); setTimeout(()=>$("#comp-ta")?.focus(),40); return; }
+    if(e.key==="/"){ e.preventDefault(); if(!["feed","explore"].includes(state.view)) go("feed"); setTimeout(()=>$("#search-in")?.focus(),40); return; }
+    if(e.key==="?"){ e.preventDefault(); shortcutsModal(); return; }
+  });
+}
+function shortcutsModal(){
+  const rows = [["n",t("sc_new")],["/",t("sc_search")],["g a",t("sc_feed")],["g k",t("sc_explore")],
+    ["g t",t("nav_calendar")],["g c",t("nav_trash")],["⌘/Ctrl ↵",t("save")],["?",t("sc_help")],["Esc",t("sc_close")]];
+  const body = el("div",{});
+  rows.forEach(([k,d])=> body.append(el("div",{class:"krow"}, el("span",{text:d}), el("span",{class:"kbd",text:k}))));
+  modal(t("shortcuts"), body);
+}
+
+async function logout(){
+  state.view="feed"; state.filter={tag:null,q:"",date:null,vis:"all",hasImage:false};
+  await auth.signOut();
+  // auth.onAuthStateChanged state.user'ı temizleyip renderGate() çağıracak
+}
+
+/* ========================================================================
+   boot
+   ===================================================================== */
+(async function boot(){
+  await bootPrefs();
+  auth.onAuthStateChanged(async fbUser=>{
+    try{
+      if(fbUser){
+        const u = await ensureUserDoc(fbUser);
+        state.user = u; state._gateUser=null; state._gateMode=null;
+        await bootPrefs();
+        renderApp();
+      } else {
+        state.user = null;
+        renderGate();
+      }
+    }catch(err){ console.error(err); renderGate(); }
+  });
+})();
+
+})();
+</script>
