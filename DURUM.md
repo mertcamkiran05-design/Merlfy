@@ -1,6 +1,55 @@
 # Merlfy — Durum & Devam Notları
 
-_Son güncelleme: 2026-10-10 (6. oturum) · **ARTIK İKİ AYRI MERLFY VAR** — aşağıya bak_
+_Son güncelleme: 2026-10-11 (7. oturum) · **ARTIK İKİ AYRI MERLFY VAR** — aşağıya bak_
+
+> ## 🟡 2026-10-11, 7. oturum — Doğrulama turu + PWA + 4 yeni özellik. Kodda HAZIR, **canlıya henüz yüklenmedi**
+> Kullanıcı "yapabildiğin her şeyi yap" dedi. Hepsi `web/index.html` (+ yeni dosyalar) üzerinde; `merlfy.html`'e
+> yalnızca 2 küçük cila (aşağıda) uygulandı, artifact yeniden yayınlanmadı.
+>
+> **⏳ Bekleyen tek adım — Netlify Drop (Claude yapamıyor, [Production Deploy] engeli):**
+> app.netlify.com/projects/merlfy/deploys → **`web` KLASÖRÜNÜN TAMAMINI** sürükle-bırak (artık tek dosya değil:
+> `index.html`, `sw.js`, `manifest.webmanifest`, 4 ikon PNG). Sonra `cd tests && npm run live` ile canlıda doğrula.
+>
+> **Doğrulama (önceden hiç test edilmemiş şeyler) — Playwright, canlı sitede, hepsi geçti:**
+> iki farklı hesap (A'nın herkese açık memosu B'nin Keşfet'inde görünüyor, özel memo görünmüyor, başkasının
+> memosunda menü yok) · iPhone 13 görünümünde 6 bölüm yatay taşmasız · satranç AI + iki kişi modu (çoban matı tanınıyor).
+>
+> **Bulunup düzeltilen buglar:**
+> 1. Mobilde composer'daki "Kaydet" butonu sağdan taşıp kesiliyordu → ≤560px / dokunmatikte `⌘/Ctrl+↵` ipucu gizli,
+>    bar `flex-wrap`. (her iki dosyada)
+> 2. Görselli memo kaydı Storage kapalıyken **sessizce takılıyordu** (buton "Kaydediliyor…"da kalıyordu) →
+>    `doSave` try/catch + `save_failed` toast'u.
+> 3. Paylaşım kartlarında alttaki "@kullanıcı · tarih" satırı kart kenarına yapışıktı → +32px alt boşluk (her iki dosyada).
+> 4. Avatar yükleme 1600px dataURL'i kullanıcı belgesine yazıyordu (1 MiB sınırı riski) → 150KB'a küçültülüyor.
+>
+> **Firebase Storage sorunu artık engel değil:** `idbPut` önce Storage'ı dener (12 sn zaman aşımı, `setMaxUploadRetryTime(8000)`);
+> başarısız olursa oturum boyunca `storageDown=true` ve görsel `shrinkDataUrl()` ile ≤900KB JPEG'e indirilip doğrudan
+> Firestore `resources` belgesine gömülür. Test: 6.9MB PNG → 172KB, yenilemeden sonra geri geliyor. Kullanıcı Storage'ı
+> ileride açarsa yeni görseller otomatik Storage'a gider (kod değişikliği gerekmez; bucket adı farklıysa
+> `firebaseConfig.storageBucket` güncellenmeli). İlk görselli kayıt Storage kapalıyken ~10 sn sürüyor (zaman aşımı).
+>
+> **Yeni özellikler:**
+> - **PWA:** `web/manifest.webmanifest`, `web/sw.js` (sayfa: önce ağ; kendi dosyaları + CDN: önbellek-sonra-yenile;
+>   Firebase API'lerine dokunmaz), ikonlar `icon-192/512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`
+>   (`tests/icons.js` ile üretildi). Ayarlar'ın en üstünde "📲 Uygulamayı yükle" (`beforeinstallprompt`) / iOS'ta
+>   "Safari'de Paylaş → Ana Ekrana Ekle" ipucu. Manifest kısayolu `/?new=1` → composer'a odaklanır.
+> - **Çevrimdışı:** `fdb.enablePersistence({synchronizeTabs:true})`; `safeGet()` (ağ yoksa önbellekten oku),
+>   `commit()` (çevrimdışıyken yazma sözünü bekleme — yerelde anında görünür, bağlantı gelince senkronlanır).
+>   Test: çevrimdışı açılış ~3 sn, çevrimdışı yazılan memo internet gelince başka cihazda görünüyor.
+>   (Konsolda `enableMultiTabIndexedDbPersistence() will be deprecated` uyarısı normal.)
+> - **Seri koruma 🧊:** `streakInfo()` — her takvim haftasında (Pzt–Paz) tek günlük boşluk seriyi bozmaz. Durumsuz
+>   (hiçbir yere kayıt yok, her cihazda aynı). Özet kartında "🧊 Seri koruma hazır / bu hafta kullanıldı" satırı.
+> - **Kart temaları:** `CARD_THEMES` (Kâğıt, Gece, Adaçayı, Gül, Mürekkep) + Otomatik; paylaşım penceresinde seçici,
+>   `localStorage merlfy.cardTheme`. `shareCanvas()` artık kart üreten bir *fonksiyon* alıyor (tema değişince yeniden çizer).
+> - **Görselli memo kartı:** `drawMemoCard` async; memonun ilk görseli kartın üstüne cover-crop basılıyor.
+>
+> **Testler artık repoda:** `tests/` (Playwright 1.47.2) — `README.md`'de komutlar. `live_test.js` (iki hesap/mobil/satranç),
+> `feature_test.js` (bu oturumun özellikleri), `streak_unit.js`. Firebase'de `pw…` adlı test hesapları birikti (zararsız).
+>
+> **Yapılmadı (bilerek):** "bugün yazmadın" bildirimi — push sunucusu olmadan yalnızca uygulama açıkken çalışır,
+> değeri düşük; istenirse Firebase Cloud Messaging + Cloud Function gerekir (Blaze planı).
+>
+> ---
 
 > ## 🔴 2026-10-10, 6. oturum — Proje GitHub'a taşındı + Firebase Storage'da GERÇEK BUG bulundu (henüz düzeltilmedi, kullanıcıdan aksiyon bekleniyor)
 > **1) GitHub'a taşıma:** Kullanıcı başka bir PC'ye geçeceği için `C:\Users\Acer\merlfy` git repo'suna çevrildi

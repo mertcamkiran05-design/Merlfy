@@ -180,6 +180,7 @@
   .comp-bar .sp{flex:1}
   .comp-count{font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
   .comp-bar select{padding:5px 8px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:var(--raise);font-size:13px}
+  @media (max-width:560px),(hover:none){ .comp-bar .kbd{display:none} .comp-bar{flex-wrap:wrap} .comp-bar select{min-width:0;max-width:44vw} }
   .icon-btn{width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center;color:var(--text-dim)}
   .icon-btn:hover{background:var(--raise);color:var(--text)}
   .icon-btn svg{width:17px;height:17px;stroke-width:1.8}
@@ -1093,7 +1094,7 @@ function drawMemoCard(memo, author){
   const top=196, bodyH=lines.length*lh;
   const tagsY = top + bodyH + 46;
   const footY = tagsY + (tags.length?54:0) + 46;
-  const H = Math.round(footY + 96);
+  const H = Math.round(footY + 128);
   const c=newCanvas(W,H), x=c.getContext("2d");
   x.textBaseline="alphabetic";
   x.fillStyle=T.bg; x.fillRect(0,0,W,H);
@@ -1127,7 +1128,7 @@ function drawPromptCard(memo, author){
   const divY = qTop + qH + 34;
   const aTop = divY + 50;
   const footY = aTop + aLines.length*aLh + 60;
-  const H = Math.round(footY + 96);
+  const H = Math.round(footY + 128);
   const c=newCanvas(W,H), x=c.getContext("2d");
   x.textBaseline="alphabetic";
   x.fillStyle=T.bg; x.fillRect(0,0,W,H);

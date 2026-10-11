@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-title" content="Merlfy">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ecedee">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131719">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -180,6 +183,7 @@
   .comp-bar .sp{flex:1}
   .comp-count{font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
   .comp-bar select{padding:5px 8px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:var(--raise);font-size:13px}
+  @media (max-width:560px),(hover:none){ .comp-bar .kbd{display:none} .comp-bar{flex-wrap:wrap} .comp-bar select{min-width:0;max-width:44vw} }
   .icon-btn{width:32px;height:32px;border-radius:var(--r-sm);display:grid;place-items:center;color:var(--text-dim)}
   .icon-btn:hover{background:var(--raise);color:var(--text)}
   .icon-btn svg{width:17px;height:17px;stroke-width:1.8}
@@ -385,6 +389,13 @@
   .goal-pill{margin-top:10px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;text-align:center;
     background:var(--surface-2);color:var(--text-dim)}
   .goal-pill.on{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+  .freeze-line{margin-top:6px;font-size:11.5px;text-align:center;color:var(--text-dim);cursor:help}
+  .freeze-line.used{opacity:.6}
+  .ct-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .ct-row .ct-lbl{font-size:12px;color:var(--text-dim);margin-right:2px}
+  .ct-row button{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;border:1px solid var(--border-strong);background:var(--raise);font-size:12px;cursor:pointer;color:var(--text)}
+  .ct-row button.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .ct-row i{width:12px;height:12px;border-radius:50%;display:inline-block;border:1px solid rgba(0,0,0,.15)}
   .otd-strip{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:0 0 12px;padding:10px 12px;
     border:1px solid var(--accent-line);border-radius:var(--r-sm);background:var(--accent-weak);transition:border-color .12s}
   .otd-strip:hover{border-color:var(--accent)}
@@ -458,6 +469,7 @@ const I18N = {
     nav_feed:"Akış", nav_explore:"Keşfet", nav_calendar:"Takvim", nav_trash:"Çöp Kutusu", nav_settings:"Ayarlar",
     compose_ph:"Ne düşünüyorsun? #etiket ekleyebilirsin…",
     save:"Kaydet", saving:"Kaydediliyor…", cancel:"Vazgeç", preview:"Önizleme", add_image:"Görsel ekle",
+    save_failed:"Kaydedilemedi, tekrar dene", freeze_ready:"🧊 Seri koruma hazır", freeze_used:"🧊 Seri koruma bu hafta kullanıldı", freeze_tip:"Haftada 1 gün yazmasan da serin bozulmaz.", card_theme:"Kart teması", ct_auto:"Otomatik", ct_paper:"Kâğıt", ct_night:"Gece", ct_sage:"Adaçayı", ct_rose:"Gül", ct_ink:"Mürekkep", install_app:"📲 Uygulamayı yükle", install_ios:"Safari'de Paylaş → Ana Ekrana Ekle",
     vis_private:"Özel", vis_workspace:"Çalışma alanı", vis_public:"Herkese açık",
     empty_feed_t:"Henüz memo yok", empty_feed_p:"Yukarıdan ilk notunu yaz. Ctrl/⌘ + Enter ile kaydedebilirsin.",
     empty_explore_t:"Paylaşılan memo yok", empty_explore_p:"Çalışma alanı veya herkese açık memolar burada görünür.",
@@ -569,6 +581,7 @@ const I18N = {
     nav_feed:"Stream", nav_explore:"Explore", nav_calendar:"Calendar", nav_trash:"Trash", nav_settings:"Settings",
     compose_ph:"What are you thinking? You can add #tags…",
     save:"Save", saving:"Saving…", cancel:"Cancel", preview:"Preview", add_image:"Add image",
+    save_failed:"Could not save, try again", freeze_ready:"🧊 Streak freeze ready", freeze_used:"🧊 Streak freeze used this week", freeze_tip:"Miss 1 day a week and your streak survives.", card_theme:"Card theme", ct_auto:"Auto", ct_paper:"Paper", ct_night:"Night", ct_sage:"Sage", ct_rose:"Rose", ct_ink:"Ink", install_app:"📲 Install app", install_ios:"In Safari: Share → Add to Home Screen",
     vis_private:"Private", vis_workspace:"Workspace", vis_public:"Public",
     empty_feed_t:"No memos yet", empty_feed_p:"Write your first note above. Save with Ctrl/⌘ + Enter.",
     empty_explore_t:"Nothing shared", empty_explore_p:"Workspace and public memos show up here.",
@@ -715,37 +728,85 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const fdb = firebase.firestore();
+// çevrimdışı okuma (PWA): son görülen veriler ağ yokken de açılır
+try{ fdb.enablePersistence({ synchronizeTabs:true }).catch(()=>{}); }catch{}
 const fstorage = firebase.storage();
+try{ fstorage.setMaxUploadRetryTime(8000); }catch{}
 function usernameToEmail(u){ return u.trim().toLowerCase()+"@merlfy.local"; }
 
 /* ---------- Firestore-backed store shim ----------
    Aynı idbGet/idbPut/idbAll/idbDel/idbByUser isimleri korunuyor ki dosyadaki
    düzinelerce çağrı noktası değişmesin — arka planda artık IndexedDB değil
    paylaşılan Firestore var. */
+// Çevrimdışıyken sunucudan okuma hata verir → yerel önbelleğe düş
+async function safeGet(ref){
+  try{ return await ref.get(); }
+  catch(e){ if(navigator.onLine && e.code!=="unavailable") throw e; return await ref.get({ source:"cache" }); }
+}
+// Çevrimdışıyken yazma sözü sunucu onayına kadar çözülmez; yerel önbelleğe anında
+// yazılmış olur ve bağlantı gelince kendiliğinden senkronlanır — bu yüzden beklemiyoruz.
+async function commit(p){
+  if(navigator.onLine) return p;
+  p.catch(e=>console.error("offline write", e));
+}
 async function idbGet(coll, id){
-  const snap = await fdb.collection(coll).doc(id).get();
+  const snap = await safeGet(fdb.collection(coll).doc(id));
   return snap.exists ? snap.data() : undefined;
 }
 async function idbAll(coll){
   const snap = await fdb.collection(coll).get();
   return snap.docs.map(d=>d.data());
 }
+// Storage yüklemesi başarısız olursa (ör. bucket henüz açılmamış) görsel küçültülüp
+// doğrudan Firestore belgesine gömülür — belge sınırı 1 MiB, güvenli pay bırakıyoruz.
+let storageDown = false;
+const INLINE_MAX = 900000;
+async function uploadToStorage(blob, path){
+  const task = fstorage.ref(path).put(blob);
+  const timer = setTimeout(()=>{ try{ task.cancel(); }catch{} }, 12000);
+  try{ await task; return await task.snapshot.ref.getDownloadURL(); }
+  finally{ clearTimeout(timer); }
+}
+function shrinkDataUrl(src, maxChars){
+  if(src.length<=maxChars) return Promise.resolve(src);
+  return new Promise((res,rej)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let side = Math.min(1280, Math.max(img.width,img.height)), q = .82, out = src;
+      for(let i=0;i<10;i++){
+        const s = side/Math.max(img.width,img.height);
+        const cv = el("canvas"); cv.width=Math.round(img.width*s); cv.height=Math.round(img.height*s);
+        const x = cv.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,cv.width,cv.height);
+        x.drawImage(img,0,0,cv.width,cv.height);
+        out = cv.toDataURL("image/jpeg", q);
+        if(out.length<=maxChars) return res(out);
+        side = Math.round(side*.8); q = Math.max(.5, q-.06);
+      }
+      rej(new Error("image too large"));
+    };
+    img.onerror = rej;
+    img.src = src;
+  });
+}
 async function idbPut(coll, value){
   if(coll==="resources" && value.dataUrl && value.dataUrl.startsWith("data:")){
-    const blob = await (await fetch(value.dataUrl)).blob();
     const path = `resources/${value.userId}/${value.id}`;
-    const ref = fstorage.ref(path);
-    await ref.put(blob);
-    value = { ...value, dataUrl: await ref.getDownloadURL(), storagePath: path };
+    let url = null;
+    if(!storageDown){
+      try{ url = await uploadToStorage(await (await fetch(value.dataUrl)).blob(), path); }
+      catch(e){ storageDown = true; console.warn("Storage yüklemesi başarısız, Firestore'a gömülüyor:", e && e.code || e); }
+    }
+    value = url ? { ...value, dataUrl:url, storagePath:path }
+                : { ...value, dataUrl: await shrinkDataUrl(value.dataUrl, INLINE_MAX) };
   }
-  await fdb.collection(coll).doc(value.id).set(value);
+  await commit(fdb.collection(coll).doc(value.id).set(value));
   return value;
 }
 async function idbDel(coll, id){
   if(coll==="resources"){
     try{ const d = await idbGet("resources",id); if(d && d.storagePath) await fstorage.ref(d.storagePath).delete(); }catch{}
   }
-  await fdb.collection(coll).doc(id).delete();
+  await commit(fdb.collection(coll).doc(id).delete());
 }
 async function idbByUser(coll, userId){
   const snap = await fdb.collection(coll).where("userId","==",userId).get();
@@ -756,7 +817,7 @@ async function idbByUser(coll, userId){
 let pendingProfile = null; // {username, displayName} — kayıt formu doldurur, ensureUserDoc tüketir
 async function ensureUserDoc(fbUser){
   const ref = fdb.collection("users").doc(fbUser.uid);
-  const snap = await ref.get();
+  const snap = await safeGet(ref);
   if(snap.exists) return snap.data();
   const firstSnap = await fdb.collection("users").limit(1).get();
   const prof = pendingProfile || {};
@@ -770,8 +831,10 @@ async function ensureUserDoc(fbUser){
   return u;
 }
 const store = {
-  async getSetting(k,def){ const snap = await fdb.collection("settings").doc("global").get();
-    const d = snap.exists ? snap.data() : {}; return (k in d) ? d[k] : def; },
+  async getSetting(k,def){
+    let d = {};
+    try{ const snap = await safeGet(fdb.collection("settings").doc("global")); if(snap.exists) d = snap.data(); }catch{}
+    return (k in d) ? d[k] : def; },
   async setSetting(k,v){ await fdb.collection("settings").doc("global").set({[k]:v},{merge:true}); },
   async memos(userId){ return idbByUser("memos", userId); },
   async allSharedMemos(){
@@ -788,7 +851,7 @@ const scoreStore = {
     const rec = { id:uid(), game, player:(player||t("sb_player")).slice(0,40),
       userId: state.user ? state.user.id : null, score: Math.round(score)||0,
       date: Date.now(), meta: meta||{} };
-    await fdb.collection("scores").doc(rec.id).set(rec);
+    await commit(fdb.collection("scores").doc(rec.id).set(rec));
     return rec;
   },
   async list(game){
@@ -1085,35 +1148,68 @@ function wrapLines(x, text, maxW){
   if(line) lines.push(line);
   return lines;
 }
+const CARD_THEMES = {
+  paper: { bg:"#e9e0d2", card:"#fbf9f5", ink:"#20292e", dim:"#6b7a80", accent:"#b06a26" },
+  night: { bg:"#15191b", card:"#1f272a", ink:"#e9ecec", dim:"#98a3a7", accent:"#d3873c" },
+  sage:  { bg:"#cfdccf", card:"#f4f8f2", ink:"#1f2d24", dim:"#5f7465", accent:"#3f7a52" },
+  rose:  { bg:"#f0d6d6", card:"#fff7f6", ink:"#3a2226", dim:"#86656a", accent:"#b4475a" },
+  ink:   { bg:"#0b0d10", card:"#0b0d10", ink:"#f4f1ea", dim:"#8d939b", accent:"#e8b04a" },
+};
+function cardThemeName(){ try{ return localStorage.getItem("merlfy.cardTheme")||"auto"; }catch{ return "auto"; } }
 function cardTheme(){
+  const name = cardThemeName();
+  if(CARD_THEMES[name]) return CARD_THEMES[name];
   const dark = document.documentElement.dataset.theme==="dark"
     || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme:dark)").matches);
-  return dark
-    ? { bg:"#15191b", card:"#1f272a", ink:"#e9ecec", dim:"#98a3a7", accent:"#d3873c" }
-    : { bg:"#e9e0d2", card:"#fbf9f5", ink:"#20292e", dim:"#6b7a80", accent:"#b06a26" };
+  return dark ? CARD_THEMES.night : CARD_THEMES.paper;
+}
+function loadCardImage(src){
+  return new Promise(res=>{
+    const img = new Image();
+    if(!src.startsWith("data:")) img.crossOrigin = "anonymous";
+    img.onload = ()=>res(img); img.onerror = ()=>res(null);
+    img.src = src;
+    setTimeout(()=>res(null), 8000);
+  });
 }
 function newCanvas(w,h){ const c = el("canvas"); c.width = w; c.height = h; return c; }
 const HM_COLS = ["#e3e5e6","#e6cfa9","#d5a35f","#b87a2f","#8c5716"];
 
-function drawMemoCard(memo, author){
+async function drawMemoCard(memo, author){
   const T=cardTheme(), W=1080, pad=160, lh=66;
   const tags = extractTags(memo.content||"").slice(0,6);
   const raw = (memo.content||"")
     .replace(/!\[[^\]]*\]\([^)]*\)/g,"")
     .replace(/(^|\s)#[\p{L}\p{N}_/-]+/gu," ")   // etiketleri gövdeden ayır
-    .replace(/[>*_`|#]/g,"").replace(/\s+/g," ").trim() || "…";
+    .replace(/[>*_`|#]/g,"").replace(/\s+/g," ").trim() || (memo.images?.length ? "" : "…");
+  // memonun ilk görseli kartın üstüne basılır (yüklenemezse sessizce atlanır)
+  let photo = null;
+  if(memo.images && memo.images.length){
+    try{ const r = await store.resource(memo.images[0]); if(r && r.dataUrl) photo = await loadCardImage(r.dataUrl); }catch{}
+  }
+  const imgW = W-pad*2+56, imgH = photo ? Math.round(Math.min(imgW*photo.height/photo.width, 760)) : 0;
+  const imgTop = 132, shift = photo ? imgH + 70 : 0;
   const mc = newCanvas(4,4).getContext("2d"); mc.font="600 48px Georgia,serif";
-  let lines = wrapLines(mc, raw, W-pad-150);
-  if(lines.length>12){ lines = lines.slice(0,12); lines[11] = lines[11].replace(/\s+\S*$/,"")+" …"; }
-  const top=196, bodyH=lines.length*lh;
-  const tagsY = top + bodyH + 46;
+  let lines = raw ? wrapLines(mc, raw, W-pad-150) : [];
+  const maxL = photo ? 6 : 12;
+  if(lines.length>maxL){ lines = lines.slice(0,maxL); lines[maxL-1] = lines[maxL-1].replace(/\s+\S*$/,"")+" …"; }
+  const top=196+shift, bodyH=lines.length*lh;
+  const tagsY = top + bodyH + 46 - (lines.length?0:66);
   const footY = tagsY + (tags.length?54:0) + 46;
-  const H = Math.round(footY + 96);
+  const H = Math.round(footY + 128);
   const c=newCanvas(W,H), x=c.getContext("2d");
   x.textBaseline="alphabetic";
   x.fillStyle=T.bg; x.fillRect(0,0,W,H);
   x.fillStyle=T.card; roundRect(x,52,52,W-104,H-104,40); x.fill();
-  x.fillStyle=T.accent; x.fillRect(pad-28,132,7,Math.min(bodyH,150));
+  if(photo){
+    // cover-crop: görsel kutuyu doldurur, taşan kısım kırpılır
+    const bx=pad-28, s=Math.max(imgW/photo.width, imgH/photo.height);
+    const sw=imgW/s, sh=imgH/s;
+    x.save(); roundRect(x,bx,imgTop,imgW,imgH,26); x.clip();
+    x.drawImage(photo, (photo.width-sw)/2, (photo.height-sh)/2, sw, sh, bx, imgTop, imgW, imgH);
+    x.restore();
+  }
+  if(lines.length){ x.fillStyle=T.accent; x.fillRect(pad-28,132+shift,7,Math.min(bodyH,150)); }
   x.fillStyle=T.ink; x.font="600 48px Georgia,'Times New Roman',serif";
   lines.forEach((ln,i)=> x.fillText(ln, pad, top + i*lh));
   if(tags.length){
@@ -1142,7 +1238,7 @@ function drawPromptCard(memo, author){
   const divY = qTop + qH + 34;
   const aTop = divY + 50;
   const footY = aTop + aLines.length*aLh + 60;
-  const H = Math.round(footY + 96);
+  const H = Math.round(footY + 128);
   const c=newCanvas(W,H), x=c.getContext("2d");
   x.textBaseline="alphabetic";
   x.fillStyle=T.bg; x.fillRect(0,0,W,H);
@@ -1226,7 +1322,11 @@ function dataUrlToBlob(d){
   for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
   return new Blob([arr], { type:"image/png" });
 }
-function shareCanvas(canvas){
+// make: kartı üreten fonksiyon (async olabilir) — tema değişince yeniden çizmek için
+async function shareCanvas(make){
+  let canvas;
+  try{ canvas = typeof make==="function" ? await make() : make; }
+  catch(e){ console.error(e); toast("✕"); return; }
   const render = blob=>{
     if(!blob) return;
     const url = URL.createObjectURL(blob);
@@ -1252,8 +1352,19 @@ function shareCanvas(canvas){
       foot.append(el("button",{class:"btn primary",text:t("card_download"),onclick:()=>{
         const a = el("a",{href:url, download:mkFile().name}); document.body.append(a); a.click(); a.remove();
       }}));
+    const themes = el("div",{class:"ct-row"}, el("span",{class:"ct-lbl",text:t("card_theme")+":"}));
+    if(typeof make==="function"){
+      const cur = cardThemeName();
+      [["auto",null],...Object.entries(CARD_THEMES)].forEach(([name,th])=>{
+        themes.append(el("button",{class:cur===name?"on":"", type:"button", "aria-pressed":String(cur===name),
+          onclick:()=>{ try{ localStorage.setItem("merlfy.cardTheme", name); }catch{} shut(); shareCanvas(make); }},
+          el("i",{style:"background:"+(th ? `linear-gradient(135deg,${th.card} 50%,${th.accent} 50%)` : "linear-gradient(135deg,#fbf9f5 50%,#1f272a 50%)")}),
+          el("span",{text:t("ct_"+name)})));
+      });
+    }
     m.append(el("div",{class:"modal-body"},
       el("img",{src:url,alt:"",style:"width:100%;border-radius:10px;display:block;box-shadow:var(--shadow)"}),
+      typeof make==="function" ? themes : null,
       el("p",{class:"hint",style:"margin:10px 0 0",text:t("card_hint")})), foot);
     ov.append(m); modalRoot.append(ov);
   };
@@ -1266,7 +1377,7 @@ function shareRecap(){
   const body = el("div",{style:"display:flex;flex-direction:column;gap:8px"});
   [["all",t("recap_all")],["30",t("recap_30")],["7",t("recap_7")]].forEach(([p,lb])=>
     body.append(el("button",{class:"btn",style:"justify-content:center",text:lb,onclick:()=>{
-      ov.remove(); shareCanvas(drawRecapCard(live, p));
+      ov.remove(); shareCanvas(()=>drawRecapCard(live, p));
     }})));
   const ov = modal(t("recap_pick"), body);
 }
@@ -1729,13 +1840,20 @@ function wireComposer(){
     const btn = $("#comp-save"); btn.disabled=true; btn.textContent=t("saving");
     const now = Date.now();
     const imgIds = [];
-    for(const src of state.composer.images){
-      const r = { id:uid(), userId:state.user.id, dataUrl:src, createdAt:now };
-      await idbPut("resources", r); imgIds.push(r.id);
+    try{
+      for(const src of state.composer.images){
+        const r = { id:uid(), userId:state.user.id, dataUrl:src, createdAt:now };
+        await idbPut("resources", r); imgIds.push(r.id);
+      }
+      const promptQ = (state.composer.promptQ && content.includes(state.composer.promptQ)) ? state.composer.promptQ : null;
+      await store.saveMemo({ id:uid(), userId:state.user.id, content, visibility:$("#comp-vis").value,
+        pinned:false, createdAt:now, updatedAt:now, deletedAt:null, images:imgIds, source:"web", promptQ });
+    }catch(e){
+      console.error(e);
+      toast("✕ "+t("save_failed"));
+      btn.disabled=false; btn.textContent=t("save");
+      return;
     }
-    const promptQ = (state.composer.promptQ && content.includes(state.composer.promptQ)) ? state.composer.promptQ : null;
-    await store.saveMemo({ id:uid(), userId:state.user.id, content, visibility:$("#comp-vis").value,
-      pinned:false, createdAt:now, updatedAt:now, deletedAt:null, images:imgIds, source:"web", promptQ });
     state.composer.images=[]; state.composer.preview=false; state.composer.promptQ=null;
     try{ localStorage.removeItem(draftKey); }catch{}
     state.filter.q=""; state.filter.tag=null; state.filter.date=null;
@@ -1867,8 +1985,8 @@ function memoMenu(m){
       mItem(t("edit"), ()=>startEdit(m)),
       mItem(m.pinned?t("unpin"):t("pin"), async()=>{ m.pinned=!m.pinned; await store.saveMemo(m); renderApp(); }),
       mItem(t("copy_text"), ()=>{ navigator.clipboard?.writeText(m.content); toast(t("copied")); }),
-      mItem("🖼 "+t("card_share"), ()=>{ shareCanvas(drawMemoCard(m, cache.authors[m.userId])); }),
-      m.promptQ ? mItem("✦ "+t("card_prompt_share"), ()=>{ shareCanvas(drawPromptCard(m, cache.authors[m.userId])); }) : null,
+      mItem("🖼 "+t("card_share"), ()=>{ shareCanvas(()=>drawMemoCard(m, cache.authors[m.userId])); }),
+      m.promptQ ? mItem("✦ "+t("card_prompt_share"), ()=>{ shareCanvas(()=>drawPromptCard(m, cache.authors[m.userId])); }) : null,
       el("hr"),
       mItem(t("delete"), async()=>{ m.deletedAt=Date.now(); await store.saveMemo(m); renderApp(); }, true),
     ].filter(Boolean));
@@ -1909,6 +2027,11 @@ function statsCard(live){
     stat(streak(days), t("stat_streak"), true)));
   card.append(goalPill(live));
   if(live.length){
+    const si = streakInfo(days);
+    card.append(el("div",{class:"freeze-line"+(si.freezeReady?"":" used"), title:t("freeze_tip"),
+      text: si.freezeReady ? t("freeze_ready") : t("freeze_used")}));
+  }
+  if(live.length){
     card.append(el("button",{class:"btn sm",style:"width:100%;justify-content:center;margin-top:10px",
       text:"📤 "+t("wrapped_btn"),onclick:shareRecap}));
     card.append(el("button",{class:"btn ghost sm",style:"width:100%;justify-content:center;margin-top:6px",
@@ -1932,11 +2055,23 @@ function surpriseMemo(){
 function stat(n,label,isStreak){
   return el("div",{class:"stat"+(isStreak?" streak":"")}, el("b",{text:String(n)}), el("span",{text:label}));
 }
-function streak(daySet){
-  let n=0; const d=new Date();
+function streak(daySet){ return streakInfo(daySet).n; }
+// Seri koruma: her takvim haftasında (Pzt–Paz) tek günlük bir boşluk seriyi bozmaz.
+// Durumsuz hesap — hiçbir yere kayıt yok, her cihazda aynı sonucu verir.
+function weekKey(d){ const x=new Date(d); x.setHours(0,0,0,0); x.setDate(x.getDate()-((x.getDay()+6)%7)); return dayKey(x.getTime()); }
+function streakInfo(daySet){
+  let n=0; const d=new Date(); const used=new Set(), frozen=[];
   if(!daySet.has(dayKey(d.getTime()))) d.setDate(d.getDate()-1);
-  while(daySet.has(dayKey(d.getTime()))){ n++; d.setDate(d.getDate()-1); }
-  return n;
+  for(;;){
+    const k = dayKey(d.getTime());
+    if(daySet.has(k)){ n++; d.setDate(d.getDate()-1); continue; }
+    const prev = new Date(d); prev.setDate(prev.getDate()-1);
+    const wk = weekKey(d);
+    if(!used.has(wk) && daySet.has(dayKey(prev.getTime()))){ used.add(wk); frozen.push(k); d.setDate(d.getDate()-1); continue; }
+    break;
+  }
+  if(!n) frozen.length = 0;
+  return { n, frozen, freezeReady: !used.has(weekKey(new Date())) };
 }
 function heatCard(live){
   const counts = {};
@@ -2867,13 +3002,27 @@ function trashView(list){
 function settingsView(){
   const wrap = el("div",{style:"display:flex;flex-direction:column;gap:14px"});
 
+  // ana ekrana kur (PWA) — yalnızca kurulabilir durumdaysa
+  if(!isStandalone() && (installPrompt || isIOS())){
+    const ic = el("div",{class:"card card-pad",style:"display:flex;align-items:center;gap:12px;flex-wrap:wrap"});
+    ic.append(el("img",{src:"/icon-192.png",alt:"",style:"width:44px;height:44px;border-radius:10px"}));
+    if(installPrompt){
+      ic.append(el("button",{class:"btn primary",text:t("install_app"),onclick:async()=>{
+        const p = installPrompt; installPrompt = null;
+        p.prompt(); try{ await p.userChoice; }catch{} renderApp();
+      }}));
+    } else ic.append(el("span",{class:"hint",style:"margin:0",text:t("install_ios")}));
+    wrap.append(ic);
+  }
+
   // profile
   const p = el("div",{class:"card card-pad"});
   p.append(el("h3",{text:t("settings_profile")}));
   const dn = el("input",{class:"input",value:state.user.displayName});
   const av = el("input",{class:"input",value:state.user.avatar||"",placeholder:"https://…"});
   const avFile = el("input",{type:"file",accept:"image/*",style:"display:none"});
-  avFile.addEventListener("change",async e=>{ if(e.target.files[0]){ av.value = await fileToImage(e.target.files[0]); } });
+  // profil belgesi 1 MiB sınırına takılmasın diye avatar küçültülür
+  avFile.addEventListener("change",async e=>{ if(e.target.files[0]){ av.value = await shrinkDataUrl(await fileToImage(e.target.files[0]), 150000); } });
   p.append(field(t("displayname"),dn));
   const avField = field(t("avatar_url"),av);
   avField.append(el("button",{class:"btn sm",style:"align-self:start",text:t("choose_file")+" ↑",onclick:()=>avFile.click()}), avFile);
@@ -3099,6 +3248,18 @@ async function logout(){
   // auth.onAuthStateChanged state.user'ı temizleyip renderGate() çağıracak
 }
 
+/* ---------- PWA ---------- */
+let installPrompt = null;
+function isStandalone(){ return matchMedia("(display-mode: standalone)").matches || navigator.standalone===true; }
+function isIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+window.addEventListener("beforeinstallprompt", e=>{
+  e.preventDefault(); installPrompt = e;
+  if(state.user && state.view==="settings") renderApp();
+});
+window.addEventListener("appinstalled", ()=>{ installPrompt = null; toast("✓ Merlfy"); });
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost"))
+  window.addEventListener("load", ()=> navigator.serviceWorker.register("/sw.js").catch(e=>console.warn("sw", e)));
+
 /* ========================================================================
    boot
    ===================================================================== */
@@ -3110,7 +3271,12 @@ async function logout(){
         const u = await ensureUserDoc(fbUser);
         state.user = u; state._gateUser=null; state._gateMode=null;
         await bootPrefs();
-        renderApp();
+        await renderApp();
+        // ana ekran kısayolu "Yeni memo" → yazma kutusuna odaklan
+        if(new URLSearchParams(location.search).has("new")){
+          history.replaceState(null,"","/");
+          const ta = $("#comp-ta"); if(ta){ ta.focus(); ta.scrollIntoView({block:"center"}); }
+        }
       } else {
         state.user = null;
         renderGate();

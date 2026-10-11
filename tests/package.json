@@ -1,0 +1,12 @@
+{
+  "name": "merlfy-tests",
+  "private": true,
+  "scripts": {
+    "serve": "node serve.js",
+    "unit": "node streak_unit.js",
+    "live": "node live_test.js https://merlfy.netlify.app/",
+    "local": "node live_test.js http://localhost:5178/ && node feature_test.js http://localhost:5178/",
+    "icons": "node icons.js"
+  },
+  "devDependencies": { "playwright": "1.47.2" }
+}
