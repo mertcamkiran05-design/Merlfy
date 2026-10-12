@@ -1,6 +1,6 @@
 // Merlfy service worker — uygulama kabuğunu önbellekler, veriler Firestore'un kendi
 // çevrimdışı önbelleğinden gelir. Firebase API isteklerine (firestore/auth/storage) dokunmaz.
-const VERSION = "merlfy-v1";
+const VERSION = "merlfy-v2";
 const SHELL = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"];
 const CDN = /^https:\/\/(cdnjs\.cloudflare\.com|www\.gstatic\.com\/firebasejs|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
 

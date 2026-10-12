@@ -6,6 +6,7 @@ npm install && npx playwright install chromium
 npm run unit                 # seri koruma birim testi (tarayıcısız)
 npm run serve                # ayrı terminalde: web/ klasörünü http://localhost:5178 'de sunar
 npm run local                # iki hesap + mobil + satranç + yeni özellikler (yerel)
+npm run recovery             # parola kurtarma (Google popup taklit edilir, yerel)
 npm run live                 # aynı regresyon testi canlı sitede
 ```
 

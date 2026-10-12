@@ -488,6 +488,14 @@ const I18N = {
     theme:"Tema", theme_system:"Sistem", theme_light:"Açık", theme_dark:"Koyu",
     language:"Dil", avatar_url:"Avatar (URL ya da yükle)", save_profile:"Profili kaydet",
     change_pass:"Parola değiştir", current_pass:"Mevcut parola", new_pass:"Yeni parola",
+    forgot_pass:"Parolamı unuttum", forgot_title:"Parolanı mı unuttun?",
+    forgot_body:"Hesabına daha önce Ayarlar'dan bir Google hesabı bağladıysan, onunla girip yeni parola belirleyebilirsin.",
+    forgot_none:"Google bağlamadıysan parola kurtarılamaz — yeni hesap açman gerekir. Bunu önlemek için girişte Ayarlar → Hesap kurtarma'dan Google bağla.",
+    google_signin:"Google ile gir", google_not_linked:"Bu Google hesabı hiçbir Merlfy hesabına bağlı değil.",
+    recovery:"Hesap kurtarma", recovery_tip:"Parolanı unutursan bağlı Google hesabınla girip yeni parola belirleyebilirsin. Google adresin kimseye gösterilmez.",
+    google_link:"🔗 Google hesabını bağla", google_linked:"✓ Google bağlı", google_unlink:"Bağlantıyı kaldır",
+    google_in_use:"Bu Google hesabı başka bir Merlfy hesabına bağlı.", google_unavailable:"Google girişi şu an kullanılamıyor.",
+    set_new_pass:"Yeni parola belirle", set_new_pass_tip:"Google ile girdin. Bir dahaki girişte kullanacağın yeni parolayı yaz:", later:"Sonra",
     allow_reg:"Girişte yeni profil oluşturmaya izin ver",
     add_account:"Profil ekle", owner:"sahip", remove:"Kaldır",
     remove_account_q:"profilini ve tüm memolarını sil? Bu geri alınamaz.",
@@ -600,6 +608,14 @@ const I18N = {
     theme:"Theme", theme_system:"System", theme_light:"Light", theme_dark:"Dark",
     language:"Language", avatar_url:"Avatar (URL or upload)", save_profile:"Save profile",
     change_pass:"Change password", current_pass:"Current password", new_pass:"New password",
+    forgot_pass:"Forgot password", forgot_title:"Forgot your password?",
+    forgot_body:"If you linked a Google account in Settings, sign in with it and set a new password.",
+    forgot_none:"Without a linked Google account the password can't be recovered — you'd need a new account. To avoid this, link Google in Settings → Account recovery.",
+    google_signin:"Sign in with Google", google_not_linked:"This Google account isn't linked to any Merlfy account.",
+    recovery:"Account recovery", recovery_tip:"If you forget your password, sign in with the linked Google account and set a new one. Your Google address is never shown to anyone.",
+    google_link:"🔗 Link Google account", google_linked:"✓ Google linked", google_unlink:"Unlink",
+    google_in_use:"This Google account is linked to another Merlfy account.", google_unavailable:"Google sign-in is unavailable right now.",
+    set_new_pass:"Set a new password", set_new_pass_tip:"You signed in with Google. Type the new password you'll use next time:", later:"Later",
     allow_reg:"Allow creating new profiles from the login screen",
     add_account:"Add profile", owner:"owner", remove:"Remove",
     remove_account_q:"— delete this profile and all its memos? This cannot be undone.",
@@ -1444,6 +1460,10 @@ async function renderGate(){
   card.append(el("div",{class:"brand"}, el("span",{class:"mark",text:"🪶"}), el("span",{class:"name",text:"Merlfy"})));
   card.append(el("p",{class:"tag",text:t("tagline")}));
 
+  if(state._gateNotice){
+    card.append(el("div",{class:"err",role:"alert",text:state._gateNotice}));
+    state._gateNotice = null;
+  }
   if(state._gateMode==="register" && state.allowReg){
     card.append(gateForm({mode:"register"}));
     card.append(el("div",{class:"switch-line"},
@@ -1457,6 +1477,8 @@ async function renderGate(){
       card.append(chips);
     }
     card.append(gateForm({mode:"login"}));
+    card.append(el("div",{style:"text-align:center;margin-top:6px"},
+      el("button",{class:"btn ghost sm",id:"forgot-btn",text:t("forgot_pass"),onclick:forgotModal})));
     const line = el("div",{class:"switch-line"});
     line.append(state.allowReg
       ? el("button",{class:"btn ghost sm",text:t("new_account"),onclick:()=>{ state._gateMode="register"; renderGate(); }})
@@ -1510,6 +1532,54 @@ function gateForm({mode}){
   });
   return form;
 }
+/* ---------- parola kurtarma (Google bağlantısı) ----------
+   Hesaplar sahte @merlfy.local e-postası kullandığı için sıfırlama e-postası gönderilemez.
+   Bunun yerine kullanıcı Ayarlar'dan bir Google hesabı bağlar; parolayı unutunca onunla
+   girip yeni parola belirler. Bağlı olmayan bir Google hesabıyla giriş yeni (yetim) bir
+   Firebase kullanıcısı açar — onAuthStateChanged bunu yakalayıp hemen siler. */
+const googleProvider = ()=> new firebase.auth.GoogleAuthProvider();
+const POPUP_CANCEL = ["auth/popup-closed-by-user","auth/cancelled-popup-request","auth/user-cancelled"];
+// Yalnızca kesin yetim: Google sağlayıcısı var, parola sağlayıcısı yok, e-posta @merlfy.local değil
+function isOrphanGoogleUser(fbUser){
+  const ids = (fbUser.providerData||[]).map(p=>p.providerId);
+  return ids.includes("google.com") && !ids.includes("password")
+    && !(fbUser.email||"").endsWith("@merlfy.local");
+}
+function forgotModal(){
+  const err = el("div",{class:"err",style:"display:none"});
+  let ov;
+  const btn = el("button",{class:"btn primary",id:"google-recover",text:t("google_signin"),onclick:async()=>{
+    err.style.display="none"; btn.disabled=true;
+    try{ sessionStorage.setItem("merlfy.recover","1"); }catch{}
+    try{
+      await auth.signInWithPopup(googleProvider());
+      ov.remove();
+    }catch(ex){
+      if(ex.code==="auth/popup-blocked"){ await auth.signInWithRedirect(googleProvider()); return; }
+      try{ sessionStorage.removeItem("merlfy.recover"); }catch{}
+      if(!POPUP_CANCEL.includes(ex.code)){ err.textContent=t("google_unavailable"); err.style.display="block"; }
+    }finally{ btn.disabled=false; }
+  }});
+  ov = modal(t("forgot_title"),
+    el("div",{}, el("p",{text:t("forgot_body")}), el("p",{class:"hint",text:t("forgot_none")}), err),
+    [btn]);
+}
+function newPassModal(){
+  const np = el("input",{class:"input",type:"password",autocomplete:"new-password"});
+  const err = el("div",{class:"err",style:"display:none"});
+  let ov;
+  const save = el("button",{class:"btn primary",text:t("set_new_pass"),onclick:async()=>{
+    err.style.display="none";
+    if(np.value.length<6){ err.textContent=t("pass_short"); err.style.display="block"; return; }
+    try{ await auth.currentUser.updatePassword(np.value); ov.remove(); toast("✓"); }
+    catch(ex){ err.textContent=ex.message; err.style.display="block"; }
+  }});
+  ov = modal(t("set_new_pass"),
+    el("div",{}, el("p",{text:t("set_new_pass_tip")}), field(t("new_pass"),np), err),
+    [el("button",{class:"btn",text:t("later"),onclick:()=>ov.remove()}), save]);
+  np.focus();
+}
+
 function field(label, input){
   const id = "f"+uid(); input.id=id;
   return el("div",{class:"field"}, el("label",{for:id,text:label}), input);
@@ -3050,6 +3120,32 @@ function settingsView(){
   }}));
   wrap.append(p);
 
+  // hesap kurtarma — Google adresi users belgesine yazılmaz (o koleksiyon herkese açık okunur)
+  const rc = el("div",{class:"card card-pad",id:"recovery-card"});
+  rc.append(el("h3",{text:t("recovery")}), el("p",{class:"hint",text:t("recovery_tip")}));
+  const rcErr = el("div",{class:"err",style:"display:none"});
+  const gInfo = auth.currentUser && (auth.currentUser.providerData||[]).find(x=>x.providerId==="google.com");
+  if(gInfo){
+    rc.append(el("div",{style:"display:flex;gap:10px;align-items:center;flex-wrap:wrap"},
+      el("span",{text:t("google_linked")+(gInfo.email?" · "+gInfo.email:"")}),
+      el("button",{class:"btn sm",text:t("google_unlink"),onclick:async()=>{
+        try{ await auth.currentUser.unlink("google.com"); toast("✓"); renderApp(); }
+        catch(ex){ rcErr.textContent=ex.message; rcErr.style.display="block"; }
+      }})));
+  } else {
+    rc.append(el("button",{class:"btn primary",id:"google-link",text:t("google_link"),onclick:async()=>{
+      rcErr.style.display="none";
+      try{ await auth.currentUser.linkWithPopup(googleProvider()); toast("✓"); renderApp(); }
+      catch(ex){
+        if(POPUP_CANCEL.includes(ex.code)) return;
+        rcErr.textContent = ex.code==="auth/credential-already-in-use" ? t("google_in_use") : t("google_unavailable");
+        rcErr.style.display="block";
+      }
+    }}));
+  }
+  rc.append(rcErr);
+  wrap.append(rc);
+
   // appearance
   const ap = el("div",{class:"card card-pad"});
   ap.append(el("h3",{text:t("settings_appearance")}));
@@ -3268,10 +3364,20 @@ if("serviceWorker" in navigator && (location.protocol==="https:" || location.hos
   auth.onAuthStateChanged(async fbUser=>{
     try{
       if(fbUser){
+        let recover = false;
+        try{ recover = sessionStorage.getItem("merlfy.recover")==="1"; sessionStorage.removeItem("merlfy.recover"); }catch{}
+        // bağlı olmayan Google hesabıyla giriş → yeni yetim kullanıcı açıldı; profil oluşturmadan sil
+        if(isOrphanGoogleUser(fbUser)){
+          try{ await fbUser.delete(); }catch{ await auth.signOut(); }
+          state._gateNotice = t("google_not_linked");
+          return; // çıkış olayı renderGate()'i çağırır
+        }
         const u = await ensureUserDoc(fbUser);
         state.user = u; state._gateUser=null; state._gateMode=null;
+        if(recover) rememberUsername(u.username);
         await bootPrefs();
         await renderApp();
+        if(recover) newPassModal();
         // ana ekran kısayolu "Yeni memo" → yazma kutusuna odaklan
         if(new URLSearchParams(location.search).has("new")){
           history.replaceState(null,"","/");

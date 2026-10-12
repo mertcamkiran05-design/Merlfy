@@ -1,8 +1,25 @@
 # Merlfy — Durum & Devam Notları
 
-_Son güncelleme: 2026-10-11 (7. oturum) · **ARTIK İKİ AYRI MERLFY VAR** — aşağıya bak_
+_Son güncelleme: 2026-10-12 (8. oturum) · **ARTIK İKİ AYRI MERLFY VAR** — aşağıya bak_
 
-> ## 🟡 2026-10-11, 7. oturum — Doğrulama turu + PWA + 4 yeni özellik. Kodda HAZIR, **canlıya henüz yüklenmedi**
+> ## ✅ 2026-10-12, 8. oturum — 7. oturumun sürümü CANLIDA, doğrulandı
+> Kullanıcı `web` klasörünü Netlify Drop ile yükledi (canlı `index.html` = yerel `web/index.html`, md5 birebir).
+> Canlıda `npm run unit` + `live_test.js` (18/18) + `feature_test.js` (22/22: PWA/SW/çevrimdışı/görsel dahil) hepsi PASS.
+> ⚠ İlk denemede klasör genel Drop alanına bırakılınca Netlify yeni bir site açtı (`statuesque-scone-f2ca8a`) —
+> mutlaka **app.netlify.com/projects/merlfy/deploys** sayfasına bırakılmalı. O fazlalık proje istenirse silinebilir.
+>
+> **Aynı oturumda eklendi — parola kurtarma (Google bağlantısı), kodda hazır, CANLIYA YÜKLENMEDİ:**
+> Hesaplar sahte `@merlfy.local` e-postası kullandığı için sıfırlama e-postası mümkün değil. Bunun yerine:
+> Ayarlar → "Hesap kurtarma" kartı (`linkWithPopup` Google / bağlantıyı kaldır; Google adresi `users` belgesine
+> YAZILMAZ çünkü o koleksiyon herkese açık), girişte "Parolamı unuttum" → `signInWithPopup` (engellenirse redirect)
+> → `sessionStorage merlfy.recover` bayrağı → girişten sonra `newPassModal()` (`updatePassword`).
+> Bağlı olmayan Google hesabıyla giriş yetim Firebase kullanıcısı açar → `isOrphanGoogleUser` (google var, password
+> yok, e-posta @merlfy.local değil) onAuthStateChanged'de profil oluşturmadan siler + girişte uyarı.
+> Firebase konsolunda Google sağlayıcısı açık, yetkili alanlarda `merlfy.netlify.app` + `localhost` var (doğrulandı).
+> `sw.js` VERSION → merlfy-v2. Test: `npm run recovery` 15/15 (Google popup taklit), live/feature regresyon yeşil.
+> Gerçek Google penceresi otomatik test edilemez → canlıya alınınca kullanıcı kendi Google hesabıyla bir kez denemeli.
+>
+> ## 2026-10-11, 7. oturum — Doğrulama turu + PWA + 4 yeni özellik (artık canlıda, yukarıya bak)
 > Kullanıcı "yapabildiğin her şeyi yap" dedi. Hepsi `web/index.html` (+ yeni dosyalar) üzerinde; `merlfy.html`'e
 > yalnızca 2 küçük cila (aşağıda) uygulandı, artifact yeniden yayınlanmadı.
 >
