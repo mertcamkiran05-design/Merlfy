@@ -1,0 +1,3 @@
+- [Merlfy projesi](merlfy-project.md) — tek dosya memo uygulaması + Telegram botu, C:\Users\Acer\merlfy
+- [Netlify deploy engeli](netlify-deploy-blocked.md) — production deploy her araçla sabit engelli, Netlify Drop kullan
+- [Playwright kullan, Chrome değil](tooling-playwright-not-chrome.md) — claude-in-chrome asla kullanma, tüm tarayıcı testleri Playwright ile
